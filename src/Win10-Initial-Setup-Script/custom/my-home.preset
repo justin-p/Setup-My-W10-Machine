@@ -35,17 +35,17 @@ SetCurrentNetworkPrivate        # SetCurrentNetworkPublic
 SetUnknownNetworksPublic        # SetUnknownNetworksPrivate     
 DisableNetDevicesAutoInst       # EnableNetDevicesAutoInst
 EnableFirewall                  # DisableFirewall
-HideDefenderTrayIcon            # ShowDefenderTrayIcon
+ShowDefenderTrayIcon            # HideDefenderTrayIcon           
 # DisableDefender               # EnableDefender
 # DisableDefenderCloud          # EnableDefenderCloud
-EnableCtrldFolderAccess         # DisableCtrldFolderAccess
+# EnableCtrldFolderAccess       # DisableCtrldFolderAccess
 EnableCIMemoryIntegrity         # DisableCIMemoryIntegrity
 EnableDefenderAppGuard          # DisableDefenderAppGuard
 HideAccountProtectionWarn       # ShowAccountProtectionWarn
 # DisableDownloadBlocking       # EnableDownloadBlocking
 DisableScriptHost               # EnableScriptHost
 EnableDotNetStrongCrypto        # DisableDotNetStrongCrypto
-EnableMeltdownCompatFlag      # DisableMeltdownCompatFlag
+EnableMeltdownCompatFlag        # DisableMeltdownCompatFlag
 EnableF8BootMenu                # DisableF8BootMenu
 # DisableBootRecovery           # EnableBootRecovery
 # DisableRecoveryAndReset       # EnableRecoveryAndReset
@@ -121,21 +121,21 @@ HideSyncNotifications           # ShowSyncNotifications
 HideRecentShortcuts             # ShowRecentShortcuts
 SetExplorerThisPC               # SetExplorerQuickAccess
 HideQuickAccess                 # ShowQuickAccess
-HideThisPCFromDesktop           # ShowThisPCOnDesktop           
-HideUserFolderFromDesktop       # ShowUserFolderOnDesktop       
-HideControlPanelFromDesktop     # ShowControlPanelOnDesktop    
-HideDesktopFromThisPC           # ShowDesktopInThisPC
-ShowDesktopInExplorer           # HideDesktopFromExplorer     
-# HideDocumentsFromThisPC       # ShowDocumentsInThisPC
-ShowDocumentsInExplorer         # HideDocumentsFromExplorer 
-# HideDownloadsFromThisPC       # ShowDownloadsInThisPC
-ShowDownloadsInExplorer         # HideDownloadsFromExplorer    
-HideMusicFromThisPC             # ShowMusicInThisPC
-ShowMusicInExplorer             # HideMusicFromExplorer        
-HidePicturesFromThisPC          # ShowPicturesInThisPC
-ShowPicturesInExplorer          # HidePicturesFromExplorer     
-HideVideosFromThisPC            # ShowVideosInThisPC
-ShowVideosInExplorer            # HideVideosFromExplorer       
+# HideThisPCFromDesktop           # ShowThisPCOnDesktop           
+# HideUserFolderFromDesktop       # ShowUserFolderOnDesktop       
+# HideControlPanelFromDesktop     # ShowControlPanelOnDesktop    
+ShowDesktopInThisPC             # HideDesktopFromThisPC           
+# HideDesktopFromExplorer       # ShowDesktopInExplorer
+ShowDocumentsInThisPC           # HideDocumentsFromThisPC         
+# HideDocumentsFromExplorer     # ShowDocumentsInExplorer
+ShowDownloadsInThisPC           # HideDownloadsFromThisPC         
+# HideDownloadsFromExplorer     # ShowDownloadsInExplorer
+ShowMusicInThisPC               # HideMusicFromThisPC             
+# HideMusicFromExplorer         # ShowMusicInExplorer
+ShowPicturesInThisPC            # HidePicturesFromThisPC          
+# HidePicturesFromExplorer      # ShowPicturesInExplorer
+ShowVideosInThisPC              # HideVideosFromThisPC            
+# HideVideosFromExplorer        # ShowVideosInExplorer
 Hide3DObjectsFromThisPC         # Show3DObjectsInThisPC
 Hide3DObjectsFromExplorer       # Show3DObjectsInExplorer
 HideIncludeInLibraryMenu        # ShowIncludeInLibraryMenu
@@ -165,7 +165,7 @@ InstallLinuxSubsystem           # UninstallLinuxSubsystem
 InstallNET23                    # UninstallNET23
 SetPhotoViewerAssociation       # UnsetPhotoViewerAssociation
 AddPhotoViewerOpenWith          # RemovePhotoViewerOpenWith
-UninstallPDFPrinter             # InstallPDFPrinter
+InstallPDFPrinter               # UninstallPDFPrinter
 UninstallXPSPrinter             # InstallXPSPrinter
 RemoveFaxPrinter                # AddFaxPrinter
 UninstallFaxAndScan             # InstallFaxAndScan
@@ -183,5 +183,5 @@ UnpinStartMenuTiles
 UnpinTaskbarIcons
 
 ### Auxiliary Functions ###
-WaitForKey
-Restart
+# WaitForKey
+# Restart
