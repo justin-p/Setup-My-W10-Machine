@@ -21,6 +21,11 @@ $Boxstarter.RebootOk=$true
 $Boxstarter.NoPassword=$true
 $Boxstarter.AutoLogin=$true
 $ChocoPackages = @(
+    "cpu-z",
+    "gpu-z",
+    "hwmonitor",
+    # Checksum error "drivergenius",
+    # Checksum error "spotify",
     "steam",
     "notepadplusplus",
     "markdownmonster",    
@@ -46,9 +51,9 @@ $ChocoPackages = @(
     "google-backup-and-sync",
     "burp-suite-free-edition",
     "ccleaner",
+    "ccenhancer",
     "classic-shell",
     "7zip",
-    "hwmonitor",
     "defraggler",
     "jre8",
     "mobaxterm",
@@ -72,6 +77,10 @@ $ChocoPackages | ForEach-object {
     choco config set cacheLocation "$env:LOCALAPPDATA\temp\chocolatey"
     cinst $_
     choco config set cacheLocation "$env:LOCALAPPDATA\temp\chocolatey"
+}
+# Install geforce-experience if we curremtly have a NVIDIA GPU
+if ($(Get-WmiObject Win32_VideoController).name -match 'NVIDIA') {
+	cinst geforce-experience
 }
 $VSCodeExtensions | ForEach-Object {
     code --install-extension $_
