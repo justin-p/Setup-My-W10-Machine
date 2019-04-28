@@ -9,8 +9,8 @@ $Boxstarter.AutoLogin=$true
 Disable-UAC
 Get-PackageProvider -Name NuGet -ForceBootstrap
 Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
-Install-Module -Name 'pester' -SkipPublisherCheck
-
+Remove-Module -Name 'Pester' -Force 
+Install-Module -Name 'Pester' -SkipPublisherCheck -Force
 $PSModules = @("posh-git",
     "VMware.PowerCLI",
     "ImportExcel",
@@ -22,7 +22,7 @@ $PSModules = @("posh-git",
     "platyPS",
     "Plaster",
     "ProtectedData",
-    #"NameIT"
+    # "NameIT"
     "PowerShellGet",
     "PSCodeHealth",
     "PowerShellGet"
@@ -30,5 +30,4 @@ $PSModules = @("posh-git",
 $PSModules | ForEach-object {
     Install-Module -Name $_ -Force
 }
-
 Enable-UAC
