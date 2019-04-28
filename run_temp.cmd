@@ -1,1 +1,0 @@
-@powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0run_temp.ps1"
