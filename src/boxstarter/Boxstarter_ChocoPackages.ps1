@@ -66,7 +66,6 @@ Function Disable-Startups
 
     }
 }
-
 $Boxstarter.RebootOk=$true
 $Boxstarter.NoPassword=$true
 $Boxstarter.AutoLogin=$true

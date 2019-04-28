@@ -11,4 +11,4 @@ $Boxstarter.NoPassword=$true
 $Boxstarter.AutoLogin=$true
 Enable-MicrosoftUpdate
 Start-Sleep -s 5
-# InstallWindowsUpdates
+InstallWindowsUpdates
