@@ -24,6 +24,7 @@ $ChocoPackages = @(
     "cpu-z",
     "gpu-z",
     "hwmonitor",
+    "foxitreader",
     # Checksum error "drivergenius",
     # Checksum error "spotify",
     "steam",
