@@ -11,6 +11,7 @@ Function InstallDependencies {
 	cinst boxstarter
 	cinst git
 	ReloadPath
+	KeePassPlugin
 }
 Function ImportBoxstarter {
 	Import-Module -Name 'C:\ProgramData\Boxstarter\Boxstarter.Chocolatey'
@@ -25,4 +26,10 @@ Function RebootIfNeeded {
     if (Test-PendingReboot) {
         Invoke-Reboot 
     }
+}
+Function KeePassPlugin {
+	New-Item -Type Directory -Path 'C:\Program Files (x86)\KeePass Password Safe 2\Plugins'
+	ForEach ($Plugin in $(Get-ChildItem $(Join-Path $(Get-ScriptDirectory) '.\src\KeePass Plugin\'))) {
+		Copy-Item $($plugin.FullName) 'C:\Program Files (x86)\KeePass Password Safe 2\Plugins'
+	}
 }
