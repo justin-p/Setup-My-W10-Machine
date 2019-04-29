@@ -21,6 +21,8 @@ $Boxstarter.RebootOk=$true
 $Boxstarter.NoPassword=$true
 $Boxstarter.AutoLogin=$true
 $ChocoPackages = @(
+    "php",
+    "python",
     "cpu-z",
     "gpu-z",
     "hwmonitor",
