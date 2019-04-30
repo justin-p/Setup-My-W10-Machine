@@ -25,7 +25,8 @@ $PSModules = @("posh-git",
     # "NameIT"
     "PowerShellGet",
     "PSCodeHealth",
-    "PowerShellGet"
+    "PowerShellGet",
+    "windows-screenfetch"
 )
 $PSModules | ForEach-object {
     Install-Module -Name $_ -Force
