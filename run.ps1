@@ -8,6 +8,10 @@ Function Get-ScriptDirectory  {
 . $(Join-Path $(Get-ScriptDirectory) 'src\functions.ps1')
 TestAdmin
 InstallDependencies
+SetupFolders	
+SetupDotfiles
+InstallKeePassPlugins
+InstallFonts
 ImportBoxstarter
 New-PackageFromScript src\boxstarter\Boxstarter_ChocoPackages.ps1   ChocoPackages
 New-PackageFromScript src\boxstarter\Boxstarter_PSPackages.ps1      PSPackages

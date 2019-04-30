@@ -11,8 +11,6 @@ Function InstallDependencies {
 	cinst boxstarter
 	cinst git
 	ReloadPath
-	KeePassPlugin
-	InstallFonts
 }
 Function ImportBoxstarter {
 	Import-Module -Name 'C:\ProgramData\Boxstarter\Boxstarter.Chocolatey'
@@ -28,12 +26,26 @@ Function RebootIfNeeded {
         Invoke-Reboot 
     }
 }
-Function KeePassPlugin {
-	New-Item -Type Directory -Path 'C:\Program Files (x86)\KeePass Password Safe 2\Plugins'
+Function InstallKeePassPlugins {
 	ForEach ($Plugin in $(Get-ChildItem $(Join-Path $(Get-ScriptDirectory) '.\src\KeePass Plugin\'))) {
-		Copy-Item $($plugin.FullName) 'C:\Program Files (x86)\KeePass Password Safe 2\Plugins'
+		Copy-Item $($plugin.FullName) $("${env:ProgramFiles(x86)}\KeePass Password Safe 2\Plugins")
 	}
 }
 Function InstallFonts {
     . $(Join-Path $(Get-ScriptDirectory) 'src\InstallFonts\install.ps1')
+}
+Function SetupFolders {
+	$Paths = @(
+		$("$env:SystemDrive\_git\github"),
+		$("${env:ProgramFiles(x86)}\KeePass Password Safe 2\Plugins")
+	)
+	ForEach ($Path in $Paths) {
+		if (!(Test-Path $Path )) {
+			[void](New-Item -Path $Path -ItemType Directory)
+		}
+	}
+}
+Function SetupDotfiles {
+	git clone https://github.com/justin-p/dotfiles $("$env:SystemDrive\_git\github\dotfiles")
+	. $("$env:SystemDrive\_git\github\dotfiles\bootstrap.ps1")
 }
