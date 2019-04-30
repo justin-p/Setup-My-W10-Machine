@@ -1,0 +1,4 @@
+src/WSLAppX/CanonicalGroupLimited.Ubuntu18.04onWindows_1804.2018.817.0_x64__79rhkp1fndgsc.Appx filter=lfs diff=lfs merge=lfs -text
+src/WSLAppX/KaliLinux.54290C8133FEE_1.1.7.0_neutral_~_ey8k8hqnwqnmg.AppxBundle filter=lfs diff=lfs merge=lfs -text
+*.Appx filter=lfs diff=lfs merge=lfs -text
+*.AppxBundle filter=lfs diff=lfs merge=lfs -text
