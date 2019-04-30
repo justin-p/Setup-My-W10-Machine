@@ -12,6 +12,7 @@ Function InstallDependencies {
 	cinst git
 	ReloadPath
 	KeePassPlugin
+    InstallFonts
 }
 Function ImportBoxstarter {
 	Import-Module -Name 'C:\ProgramData\Boxstarter\Boxstarter.Chocolatey'
@@ -32,4 +33,7 @@ Function KeePassPlugin {
 	ForEach ($Plugin in $(Get-ChildItem $(Join-Path $(Get-ScriptDirectory) '.\src\KeePass Plugin\'))) {
 		Copy-Item $($plugin.FullName) 'C:\Program Files (x86)\KeePass Password Safe 2\Plugins'
 	}
+}
+Function InstallFonts {
+    . $(Join-Path $(Get-ScriptDirectory) 'src\fonts\install.ps1')
 }
