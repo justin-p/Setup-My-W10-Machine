@@ -10,3 +10,4 @@ Used in this repository or borrowed code/ideas from:
  - https://github.com/andrew-schofield/keepass2-haveibeenpwned
  - https://github.com/powerline/fonts
  - https://gist.github.com/jchandra74/5b0c94385175c7a8d1cb39bc5157365e
+ - https://gist.githubusercontent.com/prasannavl/ce81599fb39cc50dbdb2/raw/db679a9fc0acba6557c9239940bbd33fbd1af85b/New-FileShortcut.ps1
