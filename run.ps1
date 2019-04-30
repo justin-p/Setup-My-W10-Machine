@@ -9,9 +9,9 @@ Function Get-ScriptDirectory  {
 TestAdmin
 InstallDependencies
 SetupFolders	
-SetupDotfiles
 InstallKeePassPlugins
 InstallFonts
+InstallDotfiles
 ImportBoxstarter
 New-PackageFromScript src\boxstarter\Boxstarter_ChocoPackages.ps1   ChocoPackages
 New-PackageFromScript src\boxstarter\Boxstarter_PSPackages.ps1      PSPackages
