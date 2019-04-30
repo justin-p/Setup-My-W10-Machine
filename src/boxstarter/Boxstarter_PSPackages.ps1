@@ -12,6 +12,7 @@ Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
 Remove-Module -Name 'Pester' -Force 
 Install-Module -Name 'Pester' -SkipPublisherCheck -Force
 $PSModules = @("posh-git",
+    "oh-my-posh",
     "VMware.PowerCLI",
     "ImportExcel",
     "Carbon",
