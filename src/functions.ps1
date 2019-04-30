@@ -12,7 +12,7 @@ Function InstallDependencies {
 	cinst git
 	ReloadPath
 	KeePassPlugin
-    InstallFonts
+	InstallFonts
 }
 Function ImportBoxstarter {
 	Import-Module -Name 'C:\ProgramData\Boxstarter\Boxstarter.Chocolatey'
