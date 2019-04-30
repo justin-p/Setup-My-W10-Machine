@@ -35,5 +35,5 @@ Function KeePassPlugin {
 	}
 }
 Function InstallFonts {
-    . $(Join-Path $(Get-ScriptDirectory) 'src\fonts\install.ps1')
+    . $(Join-Path $(Get-ScriptDirectory) 'src\InstallFonts\install.ps1')
 }
