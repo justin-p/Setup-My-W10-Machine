@@ -29,6 +29,7 @@ Function InstallDependencies {
 	cinst boxstarter
 	cinst git
 	ReloadPath
+	SetupGitLFS
 }
 Function InstallKeePassPlugins {
 	ForEach ($Plugin in $(Get-ChildItem $(Join-Path $(Get-ScriptDirectory) '.\src\KeePass Plugin\'))) {
@@ -41,7 +42,7 @@ Function InstallFonts {
 Function InstallDotfiles {
 	function GitURLsObj {
 		$GitURLs = @()
-		$GitURLs += $(New-Object -TypeName PSObject -Property @{path="$("$env:SystemDrive\_git\github\dotfiles")";url="https://github.com/justin-p/dotfiles"})
+		$GitURLs += $(New-Object -TypeName PSObject -Property @{Path="$("$env:SystemDrive\_git\github\dotfiles")";Url="https://github.com/justin-p/dotfiles"})
 		Return $GitURLs
 	}
 	Function CloneRepos {
@@ -78,5 +79,12 @@ Function SetupWSL {
 		Start-Process $_ -ArgumentList "run usermod -aG sudo $($WSLCredential.GetNetworkCredential().UserName)" -Wait
 		Start-Process $_ -ArgumentList "config --default-user $($WSLCredential.GetNetworkCredential().UserName)" -Wait
 	}
+}
+Function SetupGitLFS {
+	git remote add origin https://github.com/justin-p/Setup-My-W10-Machine.git
+	git lfs install
+	git lfs fetch
+	git pull
+	git lfs pull
 }
 #endregion
