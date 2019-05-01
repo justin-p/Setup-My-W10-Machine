@@ -58,7 +58,8 @@ Function InstallDotfiles {
 Function SetupFolders {
 	$Paths = @(
 		$("$env:SystemDrive\_git\github"),
-		$("${env:ProgramFiles(x86)}\KeePass Password Safe 2\Plugins")
+		$("${env:ProgramFiles(x86)}\KeePass Password Safe 2\Plugins"),
+		$("$env:HOME\Documents\WindowsPowerShell\PoshThemes")
 	)
 	ForEach ($Path in $Paths) {
 		if (!(Test-Path $Path )) {
