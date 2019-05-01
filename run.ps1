@@ -8,6 +8,7 @@ Function Get-ScriptDirectory {
 } 
 . $(Join-Path $(Get-ScriptDirectory) 'src\functions.ps1')
 TestAdmin
+$WSLCredential = Get-Credential -Message "Enter Username and Password used for WSL Distros setup"
 InstallDependencies
 SetupFolders	
 InstallKeePassPlugins

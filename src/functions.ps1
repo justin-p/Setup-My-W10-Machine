@@ -68,16 +68,15 @@ Function SetupFolders {
 }
 Function SetupWSL {
 	# Based on https://www.reddit.com/r/bashonubuntuonwindows/comments/a3ql25/surpress_enter_new_unix_username_for_an_automated/
-	$credential = Get-Credential
 	ForEach ($AppX in $(Get-ChildItem $(Join-Path $(Get-ScriptDirectory) '.\src\WSLAppX'))) {
 		Add-AppxPackage $AppX
 	}	
 	@("$env:LOCALAPPDATA\Microsoft\WindowsApps\ubuntu1804.exe","$env:LOCALAPPDATA\Microsoft\WindowsApps\kali.exe") | ForEach-Object {
 		Start-Process $_ -ArgumentList "install --root" -Wait
-		Start-Process $_ -ArgumentList "run adduser $($credential.GetNetworkCredential().UserName) --gecos `"First,Last,RoomNumber,WorkPhone,HomePhone`" --disabled-password" -Wait
-		Start-Process $_ -ArgumentList "run echo '$($credential.GetNetworkCredential().UserName):$($credential.GetNetworkCredential().Password)' | sudo chpasswd" -Wait
-		Start-Process $_ -ArgumentList "run usermod -aG sudo $($credential.GetNetworkCredential().UserName)" -Wait
-		Start-Process $_ -ArgumentList "config --default-user $($credential.GetNetworkCredential().UserName)" -Wait
+		Start-Process $_ -ArgumentList "run adduser $($WSLCredential.GetNetworkCredential().UserName) --gecos `"First,Last,RoomNumber,WorkPhone,HomePhone`" --disabled-password" -Wait
+		Start-Process $_ -ArgumentList "run echo '$($WSLCredential.GetNetworkCredential().UserName):$($WSLCredential.GetNetworkCredential().Password)' | sudo chpasswd" -Wait
+		Start-Process $_ -ArgumentList "run usermod -aG sudo $($WSLCredential.GetNetworkCredential().UserName)" -Wait
+		Start-Process $_ -ArgumentList "config --default-user $($WSLCredential.GetNetworkCredential().UserName)" -Wait
 	}
 }
 #endregion
