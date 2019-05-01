@@ -81,7 +81,10 @@ Function SetupWSL {
 	}
 }
 Function SetupGitLFS {
-	git remote add origin https://github.com/justin-p/Setup-My-W10-Machine.git
+	git init 
+	git remote add origin https://github.com/justin-p/Setup-My-W10-Machine.git master
+	git fetch
+	git checkout -t origin/master
 	git lfs install
 	git lfs fetch
 	git pull
