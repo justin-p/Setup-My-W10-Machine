@@ -69,18 +69,15 @@ Function SetupFolders {
 Function SetupWSL {
 	# Based on https://www.reddit.com/r/bashonubuntuonwindows/comments/a3ql25/surpress_enter_new_unix_username_for_an_automated/
 	$credential = Get-Credential
-	Set-Location C:\_git\github\Setup-My-W10-Machine\src\WSLAppX
-	Add-AppxPackage .\CanonicalGroupLimited.Ubuntu18.04onWindows_1804.2018.817.0_x64__79rhkp1fndgsc.Appx	
-	Add-AppxPackage .\KaliLinux.54290C8133FEE_1.1.7.0_neutral_~_ey8k8hqnwqnmg.AppxBundle
-	Start-Process "$env:LOCALAPPDATA\Microsoft\WindowsApps\ubuntu1804.exe" -ArgumentList "install --root" -Wait
-	Start-Process "$env:LOCALAPPDATA\Microsoft\WindowsApps\ubuntu1804.exe" -ArgumentList "run adduser $($credential.GetNetworkCredential().UserName) --gecos `"First,Last,RoomNumber,WorkPhone,HomePhone`" --disabled-password" -Wait
-	Start-Process "$env:LOCALAPPDATA\Microsoft\WindowsApps\ubuntu1804.exe" -ArgumentList "run echo '$($credential.GetNetworkCredential().UserName):$($credential.GetNetworkCredential().Password)' | sudo chpasswd" -Wait
-	Start-Process "$env:LOCALAPPDATA\Microsoft\WindowsApps\ubuntu1804.exe" -ArgumentList "run usermod -aG sudo $($credential.GetNetworkCredential().UserName)" -Wait
-	Start-Process "$env:LOCALAPPDATA\Microsoft\WindowsApps\ubuntu1804.exe" -ArgumentList "config --default-user $($credential.GetNetworkCredential().UserName)" -Wait
-	Start-Process "$env:LOCALAPPDATA\Microsoft\WindowsApps\kali.exe" -ArgumentList "install --root" -Wait
-	Start-Process "$env:LOCALAPPDATA\Microsoft\WindowsApps\kali.exe" -ArgumentList "run adduser $($credential.GetNetworkCredential().UserName) --gecos `"First,Last,RoomNumber,WorkPhone,HomePhone`" --disabled-password" -Wait
-	Start-Process "$env:LOCALAPPDATA\Microsoft\WindowsApps\kali.exe" -ArgumentList "run echo '$($credential.GetNetworkCredential().UserName):$($credential.GetNetworkCredential().Password)' | sudo chpasswd" -Wait
-	Start-Process "$env:LOCALAPPDATA\Microsoft\WindowsApps\kali.exe" -ArgumentList "run usermod -aG sudo $($credential.GetNetworkCredential().UserName)" -Wait
-	Start-Process "$env:LOCALAPPDATA\Microsoft\WindowsApps\kali.exe" -ArgumentList "config --default-user $($credential.GetNetworkCredential().UserName)" -Wait
+	ForEach ($AppX in $(Get-ChildItem $(Join-Path $(Get-ScriptDirectory) '.\src\WSLAppX'))) {
+		Add-AppxPackage $AppX
+	}	
+	@("$env:LOCALAPPDATA\Microsoft\WindowsApps\ubuntu1804.exe","$env:LOCALAPPDATA\Microsoft\WindowsApps\kali.exe") | ForEach-Object {
+		Start-Process $_ -ArgumentList "install --root" -Wait
+		Start-Process $_ -ArgumentList "run adduser $($credential.GetNetworkCredential().UserName) --gecos `"First,Last,RoomNumber,WorkPhone,HomePhone`" --disabled-password" -Wait
+		Start-Process $_ -ArgumentList "run echo '$($credential.GetNetworkCredential().UserName):$($credential.GetNetworkCredential().Password)' | sudo chpasswd" -Wait
+		Start-Process $_ -ArgumentList "run usermod -aG sudo $($credential.GetNetworkCredential().UserName)" -Wait
+		Start-Process $_ -ArgumentList "config --default-user $($credential.GetNetworkCredential().UserName)" -Wait
+	}
 }
 #endregion
