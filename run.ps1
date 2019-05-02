@@ -24,4 +24,5 @@ If (Test-Path $(Join-Path $(Get-ScriptDirectory) 'src\Win10-Initial-Setup-Script
 Else {
     Write-Output "Cant find $(Join-Path $(Get-ScriptDirectory) 'src\Win10-Initial-Setup-Script\Win10.psm1')"
 }
+SetupWSL
 Install-BoxstarterPackage -PackageName ChocoPackages, PSPackages #,WindowsUpdates
