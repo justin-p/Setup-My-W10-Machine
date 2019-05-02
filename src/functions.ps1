@@ -87,7 +87,7 @@ Function SetupGitLFS {
 	git config --local user.name 'temp'
 	git config --local user.email 'e-mail@mail.mail'
 	git commit -m 'temp'	
-	git checkout -t origin/master
+	git checkout -t origin/wsl-automation
 	git lfs install
 	git lfs fetch
 	git lfs pull
