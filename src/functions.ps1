@@ -92,5 +92,6 @@ Function SetupGitLFS {
 	git lfs install
 	git lfs fetch
 	git lfs pull
+	if (Test-Path ~\.gitconfig) {Remove-Item -Path ~\.gitconfig} # Remove .gitconfig created by LFS
 }
 #endregion
