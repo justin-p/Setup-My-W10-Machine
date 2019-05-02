@@ -14,12 +14,17 @@ Function SetupWSL {
 		Add-AppxPackage $AppX
 	}	
 	@("$env:LOCALAPPDATA\Microsoft\WindowsApps\ubuntu1804.exe","$env:LOCALAPPDATA\Microsoft\WindowsApps\kali.exe") | ForEach-Object {
-		Start-Process $_ -ArgumentList "install --root" -Wait
-		Start-Process $_ -ArgumentList "run adduser $($WSLCredential.GetNetworkCredential().UserName) --gecos `"First,Last,RoomNumber,WorkPhone,HomePhone`" --disabled-password" -Wait
+        Start-Process $_ -ArgumentList "install --root" -Wait
+        # ! BUG: Since now $WSL is not defined duo boxstarter reboot it trows error below.
+        # !      You cannot call a method on a null-valued expression.
+        #   TODO: Rethink this setup. 
+        #       A reboot is needed after WSL install. Boxstater can do this, but this clears the credential object
+        #       
+        Start-Process $_ -ArgumentList "run adduser $($WSLCredential.GetNetworkCredential().UserName) --gecos `"First,Last,RoomNumber,WorkPhone,HomePhone`" --disabled-password" -Wait
 		Start-Process $_ -ArgumentList "run echo '$($WSLCredential.GetNetworkCredential().UserName):$($WSLCredential.GetNetworkCredential().Password)' | sudo chpasswd" -Wait
 		Start-Process $_ -ArgumentList "run usermod -aG sudo $($WSLCredential.GetNetworkCredential().UserName)" -Wait
 		Start-Process $_ -ArgumentList "config --default-user $($WSLCredential.GetNetworkCredential().UserName)" -Wait
 	}
 }
 SetupGitLFS
-SetupWSL
+# SetupWSL
