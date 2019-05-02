@@ -15,6 +15,7 @@ InstallKeePassPlugins
 InstallFonts
 InstallDotfiles
 ImportBoxstarter
+New-PackageFromScript src\boxstarter\Boxstarter_WSLSetup.ps1        WSLSetup
 New-PackageFromScript src\boxstarter\Boxstarter_ChocoPackages.ps1   ChocoPackages
 New-PackageFromScript src\boxstarter\Boxstarter_PSPackages.ps1      PSPackages
 New-PackageFromScript src\boxstarter\Boxstarter_WindowsUpdates.ps1  WindowsUpdates
@@ -24,5 +25,4 @@ If (Test-Path $(Join-Path $(Get-ScriptDirectory) 'src\Win10-Initial-Setup-Script
 Else {
     Write-Output "Cant find $(Join-Path $(Get-ScriptDirectory) 'src\Win10-Initial-Setup-Script\Win10.psm1')"
 }
-SetupWSL
-Install-BoxstarterPackage -PackageName ChocoPackages, PSPackages #,WindowsUpdates
+Install-BoxstarterPackage -PackageName WSLSetup,ChocoPackages, PSPackages #,WindowsUpdates

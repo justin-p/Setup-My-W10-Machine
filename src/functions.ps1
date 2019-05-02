@@ -67,31 +67,4 @@ Function SetupFolders {
 		}
 	}
 }
-Function SetupWSL {
-	# Based on https://www.reddit.com/r/bashonubuntuonwindows/comments/a3ql25/surpress_enter_new_unix_username_for_an_automated/
-	ForEach ($AppX in $(Get-ChildItem $(Join-Path $(Get-ScriptDirectory) '.\src\WSLAppX'))) {
-		Add-AppxPackage $AppX
-	}	
-	@("$env:LOCALAPPDATA\Microsoft\WindowsApps\ubuntu1804.exe","$env:LOCALAPPDATA\Microsoft\WindowsApps\kali.exe") | ForEach-Object {
-		Start-Process $_ -ArgumentList "install --root" -Wait
-		Start-Process $_ -ArgumentList "run adduser $($WSLCredential.GetNetworkCredential().UserName) --gecos `"First,Last,RoomNumber,WorkPhone,HomePhone`" --disabled-password" -Wait
-		Start-Process $_ -ArgumentList "run echo '$($WSLCredential.GetNetworkCredential().UserName):$($WSLCredential.GetNetworkCredential().Password)' | sudo chpasswd" -Wait
-		Start-Process $_ -ArgumentList "run usermod -aG sudo $($WSLCredential.GetNetworkCredential().UserName)" -Wait
-		Start-Process $_ -ArgumentList "config --default-user $($WSLCredential.GetNetworkCredential().UserName)" -Wait
-	}
-}
-Function SetupGitLFS {
-	git init 
-	git remote add origin https://github.com/justin-p/Setup-My-W10-Machine.git
-	git fetch
-	git config --local user.name 'temp'
-	git config --local user.email 'e-mail@mail.mail'
-	git add *
-	git commit -m 'temp'	
-	git checkout -t origin/wsl-automation
-	git lfs install
-	git lfs fetch
-	git lfs pull
-	if (Test-Path ~\.gitconfig) {Remove-Item -Path ~\.gitconfig} # Remove .gitconfig created by LFS
-}
 #endregion
