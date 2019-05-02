@@ -1,7 +1,7 @@
 Function SetupGitLFS {
     Set-Location C:\_git\github
     git clone https://github.com/justin-p/Setup-My-W10-Machine.git
-    Set-Location /Setup-My-W10-Machine.git
+    Set-Location C:\_git\github\Setup-My-W10-Machine.git
 	git checkout -t origin/wsl-automation
 	git lfs install
 	git lfs fetch
