@@ -29,7 +29,6 @@ Function InstallDependencies {
 	cinst boxstarter
 	cinst git
 	ReloadPath
-	SetupGitLFS
 }
 Function InstallKeePassPlugins {
 	ForEach ($Plugin in $(Get-ChildItem $(Join-Path $(Get-ScriptDirectory) '.\src\KeePass Plugin\'))) {
