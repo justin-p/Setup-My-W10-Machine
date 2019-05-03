@@ -8,7 +8,6 @@ Function Get-ScriptDirectory {
 } 
 . $(Join-Path $(Get-ScriptDirectory) 'src\functions.ps1')
 TestAdmin
-$WSLCredential = Get-Credential -Message "Enter Username and Password used for WSL Distros setup"
 InstallDependencies
 SetupFolders	
 InstallKeePassPlugins
@@ -18,11 +17,11 @@ ImportBoxstarter
 New-PackageFromScript src\boxstarter\Boxstarter_WSLSetup.ps1        WSLSetup
 New-PackageFromScript src\boxstarter\Boxstarter_ChocoPackages.ps1   ChocoPackages
 New-PackageFromScript src\boxstarter\Boxstarter_PSPackages.ps1      PSPackages
-New-PackageFromScript src\boxstarter\Boxstarter_WindowsUpdates.ps1  WindowsUpdates
+New-PackageFromScript src\boxstarter\Boxstarter_WindowsUpdates.ps1  WindowsUpdates 
 If (Test-Path $(Join-Path $(Get-ScriptDirectory) 'src\Win10-Initial-Setup-Script\Win10.psm1')) {
     . $(Join-Path $(Get-ScriptDirectory) 'src\Win10-Initial-Setup-Script\Win10.ps1') -Include $(Join-Path $(Get-ScriptDirectory) 'src\Win10-Initial-Setup-Script\Win10.psm1') -Preset $(Join-Path $(Get-ScriptDirectory) 'src\Win10-Initial-Setup-Script\custom\my-home.preset')  
 }
 Else {
     Write-Output "Cant find $(Join-Path $(Get-ScriptDirectory) 'src\Win10-Initial-Setup-Script\Win10.psm1')"
 }
-Install-BoxstarterPackage -PackageName WSLSetup,ChocoPackages, PSPackages #,WindowsUpdates
+Install-BoxstarterPackage -PackageName ChocoPackages, PSPackages, WSLSetup #,WindowsUpdates
