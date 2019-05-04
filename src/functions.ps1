@@ -86,7 +86,7 @@ function SetupW10 {
 	}
 	Install-BoxstarterPackage -PackageName ChocoPackages, PSPackages, WSLSetup #,WindowsUpdates
 }
-SetupWSLUsers {
+function SetupWSLUsers {
 	$WSLCredential = Get-Credential -Message "Enter Username and Password used for WSL Distros setup"    
 	Start-Process $_ -ArgumentList "run adduser justin --gecos `"First,Last,RoomNumber,WorkPhone,HomePhone`" --disabled-password" -Wait
 	Start-Process $_ -ArgumentList "run echo '$($WSLCredential.GetNetworkCredential().UserName):$($WSLCredential.GetNetworkCredential().Password)' | sudo chpasswd" -Wait
