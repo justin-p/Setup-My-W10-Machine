@@ -13,16 +13,17 @@ Function SetupWSL {
 	ForEach ($AppX in $(Get-ChildItem 'C:\_git\github\Setup-My-W10-Machine\src\WSLAppX')) {
 		Add-AppxPackage $AppX
     }	
-    $WSLCredential = Get-Credential -Message "Enter Username and Password used for WSL Distros setup"    
+    #$WSLCredential = Get-Credential -Message "Enter Username and Password used for WSL Distros setup"    
 	@("$env:LOCALAPPDATA\Microsoft\WindowsApps\ubuntu1804.exe","$env:LOCALAPPDATA\Microsoft\WindowsApps\kali.exe") | ForEach-Object {
         Start-Process $_ -ArgumentList "install --root" -Wait
         #   TODO: Rethink this setup. 
         #       A reboot is needed after WSL install. Boxstater can do this, but this clears the credential object if we ask at at the start of run.ps1
-        #       Asking for a password here won't make it all 'fully automagiclly walk away and the PC is done', but sometimes you can't have your cake and eat it too.
-        Start-Process $_ -ArgumentList "run adduser $($WSLCredential.GetNetworkCredential().UserName) --gecos `"First,Last,RoomNumber,WorkPhone,HomePhone`" --disabled-password" -Wait
-		Start-Process $_ -ArgumentList "run echo '$($WSLCredential.GetNetworkCredential().UserName):$($WSLCredential.GetNetworkCredential().Password)' | sudo chpasswd" -Wait
-		Start-Process $_ -ArgumentList "run usermod -aG sudo $($WSLCredential.GetNetworkCredential().UserName)" -Wait
-		Start-Process $_ -ArgumentList "config --default-user $($WSLCredential.GetNetworkCredential().UserName)" -Wait
+		#       Asking for a password here won't make it all 'fully automagiclly walk away and the PC is done', but sometimes you can't have your cake and eat it too.
+		#       Asking for a password a password has a 30 second timeout. Creating a passwordless account for now.
+        Start-Process $_ -ArgumentList "run adduser justin --gecos `"First,Last,RoomNumber,WorkPhone,HomePhone`" --disabled-password" -Wait
+		#Start-Process $_ -ArgumentList "run echo '$($WSLCredential.GetNetworkCredential().UserName):$($WSLCredential.GetNetworkCredential().Password)' | sudo chpasswd" -Wait
+		Start-Process $_ -ArgumentList "run usermod -aG sudo justin" -Wait
+		Start-Process $_ -ArgumentList "config --default-user justin" -Wait
 	}
 }
 SetupGitLFS
