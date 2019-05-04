@@ -7,7 +7,7 @@ Function Get-ScriptDirectory {
     } 
 } 
 . $(Join-Path $(Get-ScriptDirectory) 'src\functions.ps1')
-If (!(Test-Path "$env:LOCALAPPDATA\Microsoft\WindowsApps\ubuntu1804.exe" )) {
+If (Test-Path "$env:LOCALAPPDATA\Microsoft\WindowsApps\ubuntu1804.exe") {
     SetupWSL
     exit
 }
