@@ -69,9 +69,6 @@ Function SetupFolders {
 function SetupWSL {
 	# Based on https://www.reddit.com/r/bashonubuntuonwindows/comments/a3ql25/surpress_enter_new_unix_username_for_an_automated/
 	$WSLCredential = Get-Credential -Message "Enter Username and Password used for WSL Distros setup"
-	ForEach ($AppX in $(Get-ChildItem 'C:\_git\github\Setup-My-W10-Machine\src\WSLAppX')) {
-		Add-AppxPackage $AppX
-	}	
 	@("$env:LOCALAPPDATA\Microsoft\WindowsApps\ubuntu1804.exe","$env:LOCALAPPDATA\Microsoft\WindowsApps\kali.exe") | ForEach-Object {
         Start-Process $_ -ArgumentList "install --root" -Wait
         Start-Process $_ -ArgumentList "run adduser $($WSLCredential.GetNetworkCredential().UserName) --gecos `"First,Last,RoomNumber,WorkPhone,HomePhone`" --disabled-password" -Wait
