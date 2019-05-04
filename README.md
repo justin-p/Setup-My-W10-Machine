@@ -1,5 +1,8 @@
 # Setup-My-W10-Machine
 
+<img src="_img/logo.jpg" alt="drawing" width="750"/>
+
+
 Used in this repository or borrowed code/ideas from:
  - https://github.com/justin-p/dotfiles
  - https://chocolatey.org/
@@ -15,6 +18,7 @@ Used in this repository or borrowed code/ideas from:
  - https://github.com/JanDeDobbeleer/oh-my-posh
  - https://github.com/tonsky/FiraCode/wiki/VS-Code-Instructions
  - https://github.com/robb0wen/synthwave-vscode
+ - https://poshgui.com/Editor
 
 ![vscode](_img/Code_YNk0nJukB8.png)  
 
