@@ -9,7 +9,7 @@ Function Get-ScriptDirectory {
 . $(Join-Path $(Get-ScriptDirectory) 'src\functions.ps1')
 If (Test-Path "$env:LOCALAPPDATA\Microsoft\WindowsApps\ubuntu1804.exe") {
     SetupWSL
-    exit
+    Exit
 }
 TestAdmin
 InstallDependencies
@@ -18,6 +18,7 @@ InstallKeePassPlugins
 InstallFonts
 InstallDotfiles
 ImportBoxstarter
+SetupGitLFS
 New-PackageFromScript src\boxstarter\Boxstarter_ChocoPackages.ps1       ChocoPackages
 New-PackageFromScript src\boxstarter\Boxstarter_PSPackages.ps1          PSPackages
 New-PackageFromScript .\src\boxstarter\Boxstarter_InstallWSLDistros.ps1 InstallWSLDistros
