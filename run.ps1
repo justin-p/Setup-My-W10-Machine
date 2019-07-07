@@ -12,6 +12,8 @@ If (Test-Path "$env:LOCALAPPDATA\Microsoft\WindowsApps\ubuntu1804.exe") {
     Exit
 }
 TestAdmin
+$WSLCredential = Get-Credential -Message "Enter Username and Password used for WSL Distros setup"
+$WSLCredential | Export-Clixml -Path 'C:\_git\github\Setup-My-W10-Machine\wsl.cred'
 InstallDependencies
 SetupFolders	
 InstallKeePassPlugins
