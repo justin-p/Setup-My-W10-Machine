@@ -1,5 +1,8 @@
 # Setup-My-W10-Machine
 
+<img src="_img/logo.jpg" alt="drawing" width="750"/>
+
+
 Used in this repository or borrowed code/ideas from:
  - https://github.com/justin-p/dotfiles
  - https://chocolatey.org/
@@ -20,4 +23,8 @@ Used in this repository or borrowed code/ideas from:
 
 ![ConEmu](_img/ConEmu64_m464DKRBOi.jpg)
 
+![Windows-term](https://github.com/justin-p/dotfiles/blob/master/_img/windows_terminal.gif?raw=true)
+
 ![Explorer](_img/explorer_qMPBljG7ib.png)
+
+

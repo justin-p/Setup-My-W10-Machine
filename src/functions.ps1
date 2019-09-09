@@ -41,7 +41,7 @@ Function InstallFonts {
 Function InstallDotfiles {
 	function GitURLsObj {
 		$GitURLs = @()
-		$GitURLs += $(New-Object -TypeName PSObject -Property @{path="$("$env:SystemDrive\_git\github\dotfiles")";url="https://github.com/justin-p/dotfiles"})
+		$GitURLs += $(New-Object -TypeName PSObject -Property @{Path="$("$env:SystemDrive\_git\github\dotfiles")";Url="https://github.com/justin-p/dotfiles"})
 		Return $GitURLs
 	}
 	Function CloneRepos {
@@ -53,7 +53,6 @@ Function InstallDotfiles {
 	. $("$env:SystemDrive\_git\github\dotfiles\bootstrap.ps1")
 }
 #endregion
-
 #region Setup Functions
 Function SetupFolders {
 	$Paths = @(
@@ -66,5 +65,15 @@ Function SetupFolders {
 			[void](New-Item -Path $Path -ItemType Directory)
 		}
 	}
+}
+Function SetupGitLFS {
+	Set-Location C:\_git\github
+    git clone https://github.com/justin-p/Setup-My-W10-Machine.git
+    Set-Location C:\_git\github\Setup-My-W10-Machine
+	git checkout -t origin/wsl-automation
+	git lfs install
+	git lfs fetch
+	git lfs pull
+	# If (Test-Path ~\.gitconfig) {Remove-Item -Path ~\.gitconfig} # Remove .gitconfig created by LFS
 }
 #endregion
