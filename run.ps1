@@ -7,13 +7,7 @@ Function Get-ScriptDirectory {
     } 
 } 
 . $(Join-Path $(Get-ScriptDirectory) 'src\functions.ps1')
-If (Test-Path "$env:LOCALAPPDATA\Microsoft\WindowsApps\ubuntu1804.exe") {
-    SetupWSL
-    Exit
-}
 TestAdmin
-$WSLCredential = Get-Credential -Message "Enter Username and Password used for WSL Distros setup"
-$WSLCredential | Export-Clixml -Path 'C:\_git\github\Setup-My-W10-Machine\wsl.cred'
 InstallDependencies
 SetupFolders	
 InstallKeePassPlugins
