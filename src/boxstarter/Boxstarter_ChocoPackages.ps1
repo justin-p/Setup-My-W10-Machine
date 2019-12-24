@@ -127,7 +127,7 @@ $ChocoPackages = @(
     "hwmonitor",
     "foxitreader",
     # Checksum error "drivergenius",
-    # Checksum error "spotify",
+    Checksum error "spotify",
     "steam",
     "notepadplusplus",
     "markdownmonster",    
@@ -166,7 +166,9 @@ $ChocoPackages = @(
     "wkhtmltopdf",
     "bind-toolsonly",
     "wixtoolset",
-    "baretail"
+    "baretail",
+    "dotnetcore",
+    "Etcher"
 )
 $VSCodeExtensions = @(
     'Shan.code-settings-sync'
