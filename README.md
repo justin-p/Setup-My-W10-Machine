@@ -11,7 +11,6 @@ Used in this repository or borrowed code/ideas from:
  - https://github.com/powerline/fonts
  - https://gist.github.com/jchandra74/5b0c94385175c7a8d1cb39bc5157365e
  - https://gist.githubusercontent.com/prasannavl/ce81599fb39cc50dbdb2/raw/db679a9fc0acba6557c9239940bbd33fbd1af85b/New-FileShortcut.ps1
- - WSL AppX packages for Ubuntu18.04 and Kali, downloaded using this: http://woshub.com/how-to-download-appx-installation-file-for-any-windows-store-app/ (apperently could also been done a less hardway https://docs.microsoft.com/en-us/windows/wsl/install-manual)
  - https://github.com/JanDeDobbeleer/oh-my-posh
  - https://github.com/tonsky/FiraCode/wiki/VS-Code-Instructions
  - https://github.com/robb0wen/synthwave-vscode
