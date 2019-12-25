@@ -126,13 +126,13 @@ $ChocoPackages = @(
     "gpu-z",
     "hwmonitor",
     "foxitreader",
-    # Checksum error "drivergenius",
-    Checksum error "spotify",
+    # Checksum error "drivergenius"
+    "spotify",
     "steam",
     "notepadplusplus",
     "markdownmonster",    
     'keepass.install',
-    # Checksum error 'malwarebytes',
+    # Checksum error 'malwarebytes'
     "clipboardfusion",
     "vscode",
     "sharex",
