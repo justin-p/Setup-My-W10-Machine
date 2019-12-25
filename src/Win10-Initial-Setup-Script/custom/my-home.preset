@@ -39,8 +39,8 @@ ShowDefenderTrayIcon            # HideDefenderTrayIcon
 # DisableDefender               # EnableDefender
 # DisableDefenderCloud          # EnableDefenderCloud
 # EnableCtrldFolderAccess       # DisableCtrldFolderAccess
-EnableCIMemoryIntegrity         # DisableCIMemoryIntegrity
-EnableDefenderAppGuard          # DisableDefenderAppGuard
+DisableCIMemoryIntegrity        # EnableCIMemoryIntegrity       # WARNING: Installs hyper-v
+# DisableDefenderAppGuard		# EnableDefenderAppGuard
 HideAccountProtectionWarn       # ShowAccountProtectionWarn
 # DisableDownloadBlocking       # EnableDownloadBlocking
 DisableScriptHost               # EnableScriptHost
@@ -101,9 +101,9 @@ DisableShortcutInName           # EnableShortcutInName
 HideShortcutArrow               # ShowShortcutArrow
 SetVisualFXPerformance          # SetVisualFXAppearance
 DisableTitleBarColor            # EnableTitleBarColor           
-EnableDarkTheme               # DisableDarkTheme
-AddENKeyboard                 # RemoveENKeyboard
-EnableNumlock                 # DisableNumlock
+EnableDarkTheme                 # DisableDarkTheme
+AddENKeyboard                   # RemoveENKeyboard
+EnableNumlock                   # DisableNumlock
 # DisableEnhPointerPrecision    # EnableEnhPointerPrecision
 # SetSoundSchemeNone            # SetSoundSchemeDefault
 # DisableStartupSound           # EnableStartupSound
@@ -121,9 +121,9 @@ HideSyncNotifications           # ShowSyncNotifications
 HideRecentShortcuts             # ShowRecentShortcuts
 SetExplorerThisPC               # SetExplorerQuickAccess
 HideQuickAccess                 # ShowQuickAccess
-# HideThisPCFromDesktop           # ShowThisPCOnDesktop           
-# HideUserFolderFromDesktop       # ShowUserFolderOnDesktop       
-# HideControlPanelFromDesktop     # ShowControlPanelOnDesktop    
+# HideThisPCFromDesktop         # ShowThisPCOnDesktop           
+# HideUserFolderFromDesktop     # ShowUserFolderOnDesktop       
+# HideControlPanelFromDesktop   # ShowControlPanelOnDesktop    
 ShowDesktopInThisPC             # HideDesktopFromThisPC           
 # HideDesktopFromExplorer       # ShowDesktopInExplorer
 ShowDocumentsInThisPC           # HideDocumentsFromThisPC         
@@ -160,7 +160,7 @@ DisableIEFirstRun               # EnableIEFirstRun
 # UninstallInternetExplorer     # InstallInternetExplorer
 UninstallWorkFolders            # InstallWorkFolders
 # UninstallPowerShellV2         # InstallPowerShellV2
-# InstallLinuxSubsystem           # UninstallLinuxSubsystem
+InstallLinuxSubsystem           # UninstallLinuxSubsystem
 # InstallHyperV                 # UninstallHyperV
 InstallNET23                    # UninstallNET23
 SetPhotoViewerAssociation       # UnsetPhotoViewerAssociation
