@@ -25,7 +25,7 @@ $PSModules = @(
     "ProtectedData",
     "PowerShellGet",
     "PSCodeHealth",
-    "PowerShellGet",
+    "PowerShellGet"
 )
 $PSModules | ForEach-object {
     Install-Module -Name $_ -Force
