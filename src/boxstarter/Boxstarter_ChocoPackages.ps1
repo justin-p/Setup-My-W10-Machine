@@ -152,7 +152,12 @@ $ChocoPackages = @(
     "wkhtmltopdf",
     "bind-toolsonly",
     "dotnetcore",
-    "Etcher"
+    "Etcher",
+    "discord",
+    "tabby",
+    "go",
+    "pritunl-client",
+    "eartrumpet"
 )
 Disable-UAC
 $ChocoPackages | ForEach-object {
