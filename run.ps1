@@ -1,15 +1,15 @@
-Function Get-ScriptDirectory {  
-    If ($null -ne $hostinvocation) { 
+Function Get-ScriptDirectory {
+    If ($null -ne $hostinvocation) {
         Split-Path $hostinvocation.MyCommand.path 
     }
-    Else { 
+    Else {
         Split-Path $script:MyInvocation.MyCommand.Path 
-    } 
-} 
+    }
+}
 . $(Join-Path $(Get-ScriptDirectory) 'src\functions.ps1')
 TestAdmin
 InstallDependencies
-SetupFolders	
+SetupFolders
 InstallKeePassPlugins
 InstallDotfiles
 ImportBoxstarter
