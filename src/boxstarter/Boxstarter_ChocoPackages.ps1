@@ -118,22 +118,16 @@ $Boxstarter.RebootOk = $true
 $Boxstarter.NoPassword = $true
 $Boxstarter.AutoLogin = $true
 $ChocoPackages = @(
-    "cmder",
     "keypirinha"
-    "php",
-    "python",
     "cpu-z",
     "gpu-z",
     "hwmonitor",
     "foxitreader",
-    # Checksum error "drivergenius"
     "spotify",
     "steam",
     "notepadplusplus",
-    "markdownmonster",    
     'keepass.install',
     # Checksum error 'malwarebytes'
-    "clipboardfusion",
     "vscode",
     "sharex",
     "screentogif",
@@ -141,14 +135,11 @@ $ChocoPackages = @(
     "googlechrome",
     "winscp",
     "wireshark",
-    "carnac",
-    "lessmsi",
     "putty",
     "beyondcompare",
     "fiddler",
     "filezilla",
     "vlc",
-    "rambox",
     "treesizefree",
     "google-backup-and-sync",
     "burp-suite-free-edition",
@@ -157,21 +148,11 @@ $ChocoPackages = @(
     "classic-shell",
     "7zip",
     "defraggler",
-    "jre8",
-    "mobaxterm",
-    "nmap",
-    "winpcap",
-    "teamviewer",
     "teracopy",
     "wkhtmltopdf",
     "bind-toolsonly",
-    "wixtoolset",
-    "baretail",
     "dotnetcore",
     "Etcher"
-)
-$VSCodeExtensions = @(
-    'Shan.code-settings-sync'
 )
 Disable-UAC
 $ChocoPackages | ForEach-object {
@@ -182,9 +163,6 @@ $ChocoPackages | ForEach-object {
 # Install geforce-experience if we curremtly have a NVIDIA GPU
 if ($(Get-WmiObject Win32_VideoController).name -match 'NVIDIA') {
     cinst geforce-experience
-}
-$VSCodeExtensions | ForEach-Object {
-    code --install-extension $_
 }
 Enable-UAC
 MoveShortcuts

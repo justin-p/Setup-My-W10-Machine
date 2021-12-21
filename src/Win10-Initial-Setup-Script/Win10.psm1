@@ -1,7 +1,7 @@
 ##########
 # Win 10 / Server 2016 / Server 2019 Initial Setup Script - Tweak library
 # Author: Disassembler <disassembler@dasm.cz>
-# Version: v3.6, 2019-01-28
+# Version: v3.10, 2020-07-15
 # Source: https://github.com/Disassembler0/Win10-Initial-Setup-Script
 ##########
 
@@ -10,7 +10,7 @@
 ##########
 
 # Disable Telemetry
-# Note: This tweak also disables the possibility to join Windows Insider Program, as it requires Telemetry data.
+# Note: This tweak also disables the possibility to join Windows Insider Program and breaks Microsoft Intune enrollment/deployment, as these feaures require Telemetry data.
 # Windows Update control panel may show message "Your device is at risk because it's out of date and missing important security and quality updates. Let's get you back on track so Windows can run more securely. Select this button to get going".
 # In such case, enable telemetry, run Windows update and then disable telemetry again.
 # See also https://github.com/Disassembler0/Win10-Initial-Setup-Script/issues/57 and https://github.com/Disassembler0/Win10-Initial-Setup-Script/issues/92
@@ -27,12 +27,37 @@ Function DisableTelemetry {
 		New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\CurrentVersion\Software Protection Platform" -Force | Out-Null
 	}
 	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\CurrentVersion\Software Protection Platform" -Name "NoGenTicket" -Type DWord -Value 1
+	If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\SQMClient\Windows")) {
+		New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\SQMClient\Windows" -Force | Out-Null
+	}
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\SQMClient\Windows" -Name "CEIPEnable" -Type DWord -Value 0
+	If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppCompat")) {
+		New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppCompat" -Force | Out-Null
+	}
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppCompat" -Name "AITEnable" -Type DWord -Value 0
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppCompat" -Name "DisableInventory" -Type DWord -Value 1
+	If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\AppV\CEIP")) {
+		New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\AppV\CEIP" -Force | Out-Null
+	}
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\AppV\CEIP" -Name "CEIPEnable" -Type DWord -Value 0
+	If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\TabletPC")) {
+		New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\TabletPC" -Force | Out-Null
+	}
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\TabletPC" -Name "PreventHandwritingDataSharing" -Type DWord -Value 1
+	If (!(Test-Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\TextInput")) {
+		New-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\TextInput" -Force | Out-Null
+	}
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\TextInput" -Name "AllowLinguisticDataCollection" -Type DWord -Value 0
 	Disable-ScheduledTask -TaskName "Microsoft\Windows\Application Experience\Microsoft Compatibility Appraiser" | Out-Null
 	Disable-ScheduledTask -TaskName "Microsoft\Windows\Application Experience\ProgramDataUpdater" | Out-Null
 	Disable-ScheduledTask -TaskName "Microsoft\Windows\Autochk\Proxy" | Out-Null
 	Disable-ScheduledTask -TaskName "Microsoft\Windows\Customer Experience Improvement Program\Consolidator" | Out-Null
 	Disable-ScheduledTask -TaskName "Microsoft\Windows\Customer Experience Improvement Program\UsbCeip" | Out-Null
 	Disable-ScheduledTask -TaskName "Microsoft\Windows\DiskDiagnostic\Microsoft-Windows-DiskDiagnosticDataCollector" | Out-Null
+	# Office 2016 / 2019
+	Disable-ScheduledTask -TaskName "Microsoft\Office\Office ClickToRun Service Monitor" -ErrorAction SilentlyContinue | Out-Null
+	Disable-ScheduledTask -TaskName "Microsoft\Office\OfficeTelemetryAgentFallBack2016" -ErrorAction SilentlyContinue | Out-Null
+	Disable-ScheduledTask -TaskName "Microsoft\Office\OfficeTelemetryAgentLogOn2016" -ErrorAction SilentlyContinue | Out-Null
 }
 
 # Enable Telemetry
@@ -43,12 +68,62 @@ Function EnableTelemetry {
 	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection" -Name "AllowTelemetry" -ErrorAction SilentlyContinue
 	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PreviewBuilds" -Name "AllowBuildPreview" -ErrorAction SilentlyContinue
 	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\CurrentVersion\Software Protection Platform" -Name "NoGenTicket" -ErrorAction SilentlyContinue
+	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\SQMClient\Windows" -Name "CEIPEnable" -ErrorAction SilentlyContinue
+	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppCompat" -Name "AITEnable" -ErrorAction SilentlyContinue
+	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppCompat" -Name "DisableInventory" -ErrorAction SilentlyContinue
+	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\AppV\CEIP" -Name "CEIPEnable" -ErrorAction SilentlyContinue
+	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\TabletPC" -Name "PreventHandwritingDataSharing" -ErrorAction SilentlyContinue
+	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\TextInput" -Name "AllowLinguisticDataCollection" -ErrorAction SilentlyContinue
 	Enable-ScheduledTask -TaskName "Microsoft\Windows\Application Experience\Microsoft Compatibility Appraiser" | Out-Null
 	Enable-ScheduledTask -TaskName "Microsoft\Windows\Application Experience\ProgramDataUpdater" | Out-Null
 	Enable-ScheduledTask -TaskName "Microsoft\Windows\Autochk\Proxy" | Out-Null
 	Enable-ScheduledTask -TaskName "Microsoft\Windows\Customer Experience Improvement Program\Consolidator" | Out-Null
 	Enable-ScheduledTask -TaskName "Microsoft\Windows\Customer Experience Improvement Program\UsbCeip" | Out-Null
 	Enable-ScheduledTask -TaskName "Microsoft\Windows\DiskDiagnostic\Microsoft-Windows-DiskDiagnosticDataCollector" | Out-Null
+	# Office 2016 / 2019
+	Enable-ScheduledTask -TaskName "Microsoft\Office\Office ClickToRun Service Monitor" -ErrorAction SilentlyContinue | Out-Null
+	Enable-ScheduledTask -TaskName "Microsoft\Office\OfficeTelemetryAgentFallBack2016" -ErrorAction SilentlyContinue | Out-Null
+	Enable-ScheduledTask -TaskName "Microsoft\Office\OfficeTelemetryAgentLogOn2016" -ErrorAction SilentlyContinue | Out-Null
+}
+
+# Disable Cortana
+Function DisableCortana {
+	Write-Output "Disabling Cortana..."
+	If (!(Test-Path "HKCU:\Software\Microsoft\Personalization\Settings")) {
+		New-Item -Path "HKCU:\Software\Microsoft\Personalization\Settings" -Force | Out-Null
+	}
+	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Personalization\Settings" -Name "AcceptedPrivacyPolicy" -Type DWord -Value 0
+	If (!(Test-Path "HKCU:\Software\Microsoft\InputPersonalization\TrainedDataStore")) {
+		New-Item -Path "HKCU:\Software\Microsoft\InputPersonalization\TrainedDataStore" -Force | Out-Null
+	}
+	Set-ItemProperty -Path "HKCU:\Software\Microsoft\InputPersonalization" -Name "RestrictImplicitTextCollection" -Type DWord -Value 1
+	Set-ItemProperty -Path "HKCU:\Software\Microsoft\InputPersonalization" -Name "RestrictImplicitInkCollection" -Type DWord -Value 1
+	Set-ItemProperty -Path "HKCU:\Software\Microsoft\InputPersonalization\TrainedDataStore" -Name "HarvestContacts" -Type DWord -Value 0
+	Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "ShowCortanaButton" -Type DWord -Value 0
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\PolicyManager\default\Experience\AllowCortana" -Name "Value" -Type DWord -Value 0
+	If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search")) {
+		New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search" -Force | Out-Null
+	}
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search" -Name "AllowCortana" -Type DWord -Value 0
+	If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\InputPersonalization")) {
+		New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\InputPersonalization" -Force | Out-Null
+	}
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\InputPersonalization" -Name "AllowInputPersonalization" -Type DWord -Value 0
+	Get-AppxPackage "Microsoft.549981C3F5F10" | Remove-AppxPackage
+}
+
+# Enable Cortana
+Function EnableCortana {
+	Write-Output "Enabling Cortana..."
+	Remove-ItemProperty -Path "HKCU:\Software\Microsoft\Personalization\Settings" -Name "AcceptedPrivacyPolicy" -ErrorAction SilentlyContinue
+	Set-ItemProperty -Path "HKCU:\Software\Microsoft\InputPersonalization" -Name "RestrictImplicitTextCollection" -Type DWord -Value 0
+	Set-ItemProperty -Path "HKCU:\Software\Microsoft\InputPersonalization" -Name "RestrictImplicitInkCollection" -Type DWord -Value 0
+	Remove-ItemProperty -Path "HKCU:\Software\Microsoft\InputPersonalization\TrainedDataStore" -Name "HarvestContacts" -ErrorAction SilentlyContinue
+	Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "ShowCortanaButton" -Type DWord -Value 1
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\PolicyManager\default\Experience\AllowCortana" -Name "Value" -Type DWord -Value 1
+	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search" -Name "AllowCortana" -ErrorAction SilentlyContinue
+	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\InputPersonalization" -Name "AllowInputPersonalization" -ErrorAction SilentlyContinue
+	Get-AppxPackage -AllUsers "Microsoft.549981C3F5F10" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 }
 
 # Disable Wi-Fi Sense
@@ -129,17 +204,23 @@ Function DisableAppSuggestions {
 	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "PreInstalledAppsEverEnabled" -Type DWord -Value 0
 	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SilentInstalledAppsEnabled" -Type DWord -Value 0
 	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SubscribedContent-310093Enabled" -Type DWord -Value 0
+	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SubscribedContent-314559Enabled" -Type DWord -Value 0
 	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SubscribedContent-338387Enabled" -Type DWord -Value 0
 	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SubscribedContent-338388Enabled" -Type DWord -Value 0
 	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SubscribedContent-338389Enabled" -Type DWord -Value 0
 	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SubscribedContent-338393Enabled" -Type DWord -Value 0
+	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SubscribedContent-353694Enabled" -Type DWord -Value 0
 	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SubscribedContent-353696Enabled" -Type DWord -Value 0
 	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SubscribedContent-353698Enabled" -Type DWord -Value 0
 	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SystemPaneSuggestionsEnabled" -Type DWord -Value 0
-	If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent")) {
-		New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent" -Force | Out-Null
+	If (!(Test-Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\UserProfileEngagement")) {
+		New-Item -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\UserProfileEngagement" -Force | Out-Null
 	}
-	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent" -Name "DisableWindowsConsumerFeatures" -Type DWord -Value 1
+	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\UserProfileEngagement" -Name "ScoobeSystemSettingEnabled" -Type DWord -Value 0
+	If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\WindowsInkWorkspace")) {
+		New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\WindowsInkWorkspace" -Force | Out-Null
+	}
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\WindowsInkWorkspace" -Name "AllowSuggestedAppsInWindowsInkWorkspace" -Type DWord -Value 0
 	# Empty placeholder tile collection in registry cache and restart Start Menu process to reload the cache
 	If ([System.Environment]::OSVersion.Version.Build -ge 17134) {
 		$key = Get-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\CloudStore\Store\Cache\DefaultAccount\*windows.data.placeholdertilecollection\Current"
@@ -158,16 +239,20 @@ Function EnableAppSuggestions {
 	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SilentInstalledAppsEnabled" -Type DWord -Value 1
 	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SubscribedContent-338388Enabled" -Type DWord -Value 1
 	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SubscribedContent-338389Enabled" -Type DWord -Value 1
+	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SubscribedContent-353694Enabled" -Type DWord -Value 1
 	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SubscribedContent-353696Enabled" -Type DWord -Value 1
 	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SystemPaneSuggestionsEnabled" -Type DWord -Value 1
 	Remove-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SubscribedContent-310093Enabled" -ErrorAction SilentlyContinue
+	Remove-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SubscribedContent-314559Enabled" -ErrorAction SilentlyContinue
 	Remove-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SubscribedContent-338387Enabled" -ErrorAction SilentlyContinue
 	Remove-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SubscribedContent-338393Enabled" -ErrorAction SilentlyContinue
 	Remove-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SubscribedContent-353698Enabled" -ErrorAction SilentlyContinue
-	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent" -Name "DisableWindowsConsumerFeatures" -ErrorAction SilentlyContinue
+	Remove-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\UserProfileEngagement" -Name "ScoobeSystemSettingEnabled" -ErrorAction SilentlyContinue
+	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\WindowsInkWorkspace" -Name "AllowSuggestedAppsInWindowsInkWorkspace" -ErrorAction SilentlyContinue
 }
 
-# Disable Activity History feed in Task View - Note: The checkbox "Let Windows collect my activities from this PC" remains checked even when the function is disabled
+# Disable Activity History feed in Task View
+# Note: The checkbox "Store my activity history on this device" ("Let Windows collect my activities from this PC" on older versions) remains checked even when the function is disabled
 Function DisableActivityHistory {
 	Write-Output "Disabling Activity History..."
 	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" -Name "EnableActivityFeed" -Type DWord -Value 0
@@ -183,45 +268,36 @@ Function EnableActivityHistory {
 	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" -Name "UploadUserActivities" -ErrorAction SilentlyContinue
 }
 
-# Disable Background application access - ie. if apps can download or update when they aren't used
-# Cortana is excluded as its inclusion breaks start menu search, ShellExperience host breaks toasts and notifications
-Function DisableBackgroundApps {
-	Write-Output "Disabling Background application access..."
-	Get-ChildItem -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\BackgroundAccessApplications" -Exclude "Microsoft.Windows.Cortana*","Microsoft.Windows.ShellExperienceHost*" | ForEach-Object {
-		Set-ItemProperty -Path $_.PsPath -Name "Disabled" -Type DWord -Value 1
-		Set-ItemProperty -Path $_.PsPath -Name "DisabledByUser" -Type DWord -Value 1
+# Disable sensor features, such as screen auto rotation
+Function DisableSensors {
+	Write-Output "Disabling sensors..."
+	If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\LocationAndSensors")) {
+		New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\LocationAndSensors" -Force | Out-Null
 	}
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\LocationAndSensors" -Name "DisableSensors" -Type DWord -Value 1
 }
 
-# Enable Background application access
-Function EnableBackgroundApps {
-	Write-Output "Enabling Background application access..."
-	Get-ChildItem -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\BackgroundAccessApplications" | ForEach-Object {
-		Remove-ItemProperty -Path $_.PsPath -Name "Disabled" -ErrorAction SilentlyContinue
-		Remove-ItemProperty -Path $_.PsPath -Name "DisabledByUser" -ErrorAction SilentlyContinue
-	}
+# Enable sensor features
+Function EnableSensors {
+	Write-Output "Enabling sensors..."
+	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\LocationAndSensors" -Name "DisableSensors" -ErrorAction SilentlyContinue
 }
 
-# Disable Location Tracking
-Function DisableLocationTracking {
-	Write-Output "Disabling Location Tracking..."
-	If (!(Test-Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\location")) {
-		New-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\location" -Force | Out-Null
+# Disable location feature and scripting for the location feature
+Function DisableLocation {
+	Write-Output "Disabling location services..."
+	If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\LocationAndSensors")) {
+		New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\LocationAndSensors" -Force | Out-Null
 	}
-	Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\location" -Name "Value" -Type String -Value "Deny"
-	Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Sensor\Overrides\{BFA794E4-F964-4FDB-90F6-51056BFE4B44}" -Name "SensorPermissionState" -Type DWord -Value 0
-	Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\lfsvc\Service\Configuration" -Name "Status" -Type DWord -Value 0
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\LocationAndSensors" -Name "DisableLocation" -Type DWord -Value 1
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\LocationAndSensors" -Name "DisableLocationScripting" -Type DWord -Value 1
 }
 
-# Enable Location Tracking
-Function EnableLocationTracking {
-	Write-Output "Enabling Location Tracking..."
-	If (!(Test-Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\location")) {
-		New-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\location" -Force | Out-Null
-	}
-	Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\location" -Name "Value" -Type String -Value "Allow"
-	Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Sensor\Overrides\{BFA794E4-F964-4FDB-90F6-51056BFE4B44}" -Name "SensorPermissionState" -Type DWord -Value 1
-	Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\lfsvc\Service\Configuration" -Name "Status" -Type DWord -Value 1
+# Enable location feature and scripting for the location feature
+Function EnableLocation {
+	Write-Output "Enabling location services..."
+	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\LocationAndSensors" -Name "DisableLocation" -ErrorAction SilentlyContinue
+	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\LocationAndSensors" -Name "DisableLocationScripting" -ErrorAction SilentlyContinue
 }
 
 # Disable automatic Maps updates
@@ -299,39 +375,52 @@ Function EnableWebLangList {
 	Remove-ItemProperty -Path "HKCU:\Control Panel\International\User Profile" -Name "HttpAcceptLanguageOptOut" -ErrorAction SilentlyContinue
 }
 
-# Disable Cortana
-Function DisableCortana {
-	Write-Output "Disabling Cortana..."
-	If (!(Test-Path "HKCU:\Software\Microsoft\Personalization\Settings")) {
-		New-Item -Path "HKCU:\Software\Microsoft\Personalization\Settings" -Force | Out-Null
+# Disable biometric features
+# Note: If you log on using biometrics (fingerprint, Windows Hello etc.) it's recommended to create a password recovery disk before applying this tweak.
+Function DisableBiometrics {
+	Write-Output "Disabling biometric services..."
+	If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Biometrics")) {
+		New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Biometrics" -Force | Out-Null
 	}
-	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Personalization\Settings" -Name "AcceptedPrivacyPolicy" -Type DWord -Value 0
-	If (!(Test-Path "HKCU:\Software\Microsoft\InputPersonalization")) {
-		New-Item -Path "HKCU:\Software\Microsoft\InputPersonalization" -Force | Out-Null
-	}
-	Set-ItemProperty -Path "HKCU:\Software\Microsoft\InputPersonalization" -Name "RestrictImplicitTextCollection" -Type DWord -Value 1
-	Set-ItemProperty -Path "HKCU:\Software\Microsoft\InputPersonalization" -Name "RestrictImplicitInkCollection" -Type DWord -Value 1
-	If (!(Test-Path "HKCU:\Software\Microsoft\InputPersonalization\TrainedDataStore")) {
-		New-Item -Path "HKCU:\Software\Microsoft\InputPersonalization\TrainedDataStore" -Force | Out-Null
-	}
-	Set-ItemProperty -Path "HKCU:\Software\Microsoft\InputPersonalization\TrainedDataStore" -Name "HarvestContacts" -Type DWord -Value 0
-	If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search")) {
-		New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search" -Force | Out-Null
-	}
-	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search" -Name "AllowCortana" -Type DWord -Value 0
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Biometrics" -Name "Enabled" -Type DWord -Value 0
 }
 
-# Enable Cortana
-Function EnableCortana {
-	Write-Output "Enabling Cortana..."
-	Remove-ItemProperty -Path "HKCU:\Software\Microsoft\Personalization\Settings" -Name "AcceptedPrivacyPolicy" -ErrorAction SilentlyContinue
-	If (!(Test-Path "HKCU:\Software\Microsoft\InputPersonalization\TrainedDataStore")) {
-		New-Item -Path "HKCU:\Software\Microsoft\InputPersonalization\TrainedDataStore" -Force | Out-Null
+# Enable biometric features
+Function EnableBiometrics {
+	Write-Output "Enabling biometric services..."
+	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Biometrics" -Name "Enabled" -ErrorAction SilentlyContinue
+}
+
+# Disable access to camera
+# Note: This disables access using standard Windows API. Direct access to device will still be allowed.
+Function DisableCamera {
+	Write-Output "Disabling access to camera..."
+	If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy")) {
+		New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Force | Out-Null
 	}
-	Set-ItemProperty -Path "HKCU:\Software\Microsoft\InputPersonalization" -Name "RestrictImplicitTextCollection" -Type DWord -Value 0
-	Set-ItemProperty -Path "HKCU:\Software\Microsoft\InputPersonalization" -Name "RestrictImplicitInkCollection" -Type DWord -Value 0
-	Remove-ItemProperty -Path "HKCU:\Software\Microsoft\InputPersonalization\TrainedDataStore" -Name "HarvestContacts" -ErrorAction SilentlyContinue
-	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search" -Name "AllowCortana" -ErrorAction SilentlyContinue
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Name "LetAppsAccessCamera" -Type DWord -Value 2
+}
+
+# Enable access to camera
+Function EnableCamera {
+	Write-Output "Enabling access to camera..."
+	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Name "LetAppsAccessCamera" -ErrorAction SilentlyContinue
+}
+
+# Disable access to microphone
+# Note: This disables access using standard Windows API. Direct access to device will still be allowed.
+Function DisableMicrophone {
+	Write-Output "Disabling access to microphone..."
+	If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy")) {
+		New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Force | Out-Null
+	}
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Name "LetAppsAccessMicrophone" -Type DWord -Value 2
+}
+
+# Enable access to microphone
+Function EnableMicrophone {
+	Write-Output "Enabling access to microphone..."
+	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Name "LetAppsAccessMicrophone" -ErrorAction SilentlyContinue
 }
 
 # Disable Error reporting
@@ -378,7 +467,7 @@ Function SetP2PUpdateInternet {
 			New-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\DeliveryOptimization\Config" | Out-Null
 		}
 		Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\DeliveryOptimization\Config" -Name "DODownloadMode" -Type DWord -Value 3
-	} ElseIf ([System.Environment]::OSVersion.Version.Build -eq 14393) {
+	} ElseIf ([System.Environment]::OSVersion.Version.Build -le 14393) {
 		# Method used in 1511 and 1607
 		Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DeliveryOptimization" -Name "DODownloadMode" -ErrorAction SilentlyContinue
 	} Else {
@@ -391,6 +480,7 @@ Function SetP2PUpdateInternet {
 }
 
 # Disable Windows Update P2P delivery optimization completely
+# Warning: Completely disabling delivery optimization can break Windows Store downloads - see https://github.com/Disassembler0/Win10-Initial-Setup-Script/issues/281
 Function SetP2PUpdateDisable {
 	Write-Output "Disabling Windows Update P2P optimization..."
 	If ([System.Environment]::OSVersion.Version.Build -eq 10240) {
@@ -408,30 +498,31 @@ Function SetP2PUpdateDisable {
 	}
 }
 
-# Stop and disable Diagnostics Tracking Service
+# Stop and disable Connected User Experiences and Telemetry (previously named Diagnostics Tracking Service)
 Function DisableDiagTrack {
-	Write-Output "Stopping and disabling Diagnostics Tracking Service..."
+	Write-Output "Stopping and disabling Connected User Experiences and Telemetry Service..."
 	Stop-Service "DiagTrack" -WarningAction SilentlyContinue
 	Set-Service "DiagTrack" -StartupType Disabled
 }
 
-# Enable and start Diagnostics Tracking Service
+# Enable and start Connected User Experiences and Telemetry (previously named Diagnostics Tracking Service)
 Function EnableDiagTrack {
-	Write-Output "Enabling and starting Diagnostics Tracking Service..."
+	Write-Output "Enabling and starting Connected User Experiences and Telemetry Service ..."
 	Set-Service "DiagTrack" -StartupType Automatic
 	Start-Service "DiagTrack" -WarningAction SilentlyContinue
 }
 
-# Stop and disable WAP Push Service
+# Stop and disable Device Management Wireless Application Protocol (WAP) Push Service
+# Note: This service is needed for Microsoft Intune interoperability
 Function DisableWAPPush {
-	Write-Output "Stopping and disabling WAP Push Service..."
+	Write-Output "Stopping and disabling Device Management WAP Push Service..."
 	Stop-Service "dmwappushservice" -WarningAction SilentlyContinue
 	Set-Service "dmwappushservice" -StartupType Disabled
 }
 
-# Enable and start WAP Push Service
+# Enable and start Device Management Wireless Application Protocol (WAP) Push Service
 Function EnableWAPPush {
-	Write-Output "Enabling and starting WAP Push Service..."
+	Write-Output "Enabling and starting Device Management WAP Push Service..."
 	Set-Service "dmwappushservice" -StartupType Automatic
 	Start-Service "dmwappushservice" -WarningAction SilentlyContinue
 	Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\dmwappushservice" -Name "DelayedAutoStart" -Type DWord -Value 1
@@ -476,6 +567,273 @@ Function EnableRecentFiles {
 
 
 ##########
+#region UWP Privacy Tweaks
+##########
+# Universal Windows Platform (UWP) is an API for common application and device controls unified for all devices capable of running Windows 10.
+# UWP applications are running sandboxed and the user can control devices and capabilities available to them.
+
+# Disable UWP apps background access - ie. if UWP apps can download data or update themselves when they aren't used
+# Until 1809, Cortana and ShellExperienceHost need to be explicitly excluded as their inclusion breaks start menu search and toast notifications respectively.
+Function DisableUWPBackgroundApps {
+	Write-Output "Disabling UWP apps background access..."
+	If ([System.Environment]::OSVersion.Version.Build -ge 17763) {
+		If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy")) {
+			New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Force | Out-Null
+		}
+		Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Name "LetAppsRunInBackground" -Type DWord -Value 2
+	} Else {
+		Get-ChildItem -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\BackgroundAccessApplications" -Exclude "Microsoft.Windows.Cortana*", "Microsoft.Windows.ShellExperienceHost*" | ForEach-Object {
+			Set-ItemProperty -Path $_.PsPath -Name "Disabled" -Type DWord -Value 1
+			Set-ItemProperty -Path $_.PsPath -Name "DisabledByUser" -Type DWord -Value 1
+		}
+	}
+}
+
+# Enable UWP apps background access
+Function EnableUWPBackgroundApps {
+	Write-Output "Enabling UWP apps background access..."
+	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Name "LetAppsRunInBackground" -ErrorAction SilentlyContinue
+	Get-ChildItem -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\BackgroundAccessApplications" | ForEach-Object {
+		Remove-ItemProperty -Path $_.PsPath -Name "Disabled" -ErrorAction SilentlyContinue
+		Remove-ItemProperty -Path $_.PsPath -Name "DisabledByUser" -ErrorAction SilentlyContinue
+	}
+}
+
+# Disable access to voice activation from UWP apps
+Function DisableUWPVoiceActivation {
+	Write-Output "Disabling access to voice activation from UWP apps..."
+	If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy")) {
+		New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Force | Out-Null
+	}
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Name "LetAppsActivateWithVoice" -Type DWord -Value 2
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Name "LetAppsActivateWithVoiceAboveLock" -Type DWord -Value 2
+}
+
+# Enable access to voice activation from UWP apps
+Function EnableUWPVoiceActivation {
+	Write-Output "Enabling access to voice activation from UWP apps..."
+	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Name "LetAppsActivateWithVoice" -ErrorAction SilentlyContinue
+	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Name "LetAppsActivateWithVoiceAboveLock" -ErrorAction SilentlyContinue
+}
+
+# Disable access to notifications from UWP apps
+Function DisableUWPNotifications {
+	Write-Output "Disabling access to notifications from UWP apps..."
+	If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy")) {
+		New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Force | Out-Null
+	}
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Name "LetAppsAccessNotifications" -Type DWord -Value 2
+}
+
+# Enable access to notifications from UWP apps
+Function EnableUWPNotifications {
+	Write-Output "Enabling access to notifications from UWP apps..."
+	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Name "LetAppsAccessNotifications" -ErrorAction SilentlyContinue
+}
+
+# Disable access to account info from UWP apps
+Function DisableUWPAccountInfo {
+	Write-Output "Disabling access to account info from UWP apps..."
+	If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy")) {
+		New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Force | Out-Null
+	}
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Name "LetAppsAccessAccountInfo" -Type DWord -Value 2
+}
+
+# Enable access to account info from UWP apps
+Function EnableUWPAccountInfo {
+	Write-Output "Enabling access to account info from UWP apps..."
+	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Name "LetAppsAccessAccountInfo" -ErrorAction SilentlyContinue
+}
+
+# Disable access to contacts from UWP apps
+Function DisableUWPContacts {
+	Write-Output "Disabling access to contacts from UWP apps..."
+	If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy")) {
+		New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Force | Out-Null
+	}
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Name "LetAppsAccessContacts" -Type DWord -Value 2
+}
+
+# Enable access to contacts from UWP apps
+Function EnableUWPContacts {
+	Write-Output "Enabling access to contacts from UWP apps..."
+	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Name "LetAppsAccessContacts" -ErrorAction SilentlyContinue
+}
+
+# Disable access to calendar from UWP apps
+Function DisableUWPCalendar {
+	Write-Output "Disabling access to calendar from UWP apps..."
+	If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy")) {
+		New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Force | Out-Null
+	}
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Name "LetAppsAccessCalendar" -Type DWord -Value 2
+}
+
+# Enable access to calendar from UWP apps
+Function EnableUWPCalendar {
+	Write-Output "Enabling access to calendar from UWP apps..."
+	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Name "LetAppsAccessCalendar" -ErrorAction SilentlyContinue
+}
+
+# Disable access to phone calls from UWP apps
+Function DisableUWPPhoneCalls {
+	Write-Output "Disabling access to phone calls from UWP apps..."
+	If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy")) {
+		New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Force | Out-Null
+	}
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Name "LetAppsAccessPhone" -Type DWord -Value 2
+}
+
+# Enable access to phone calls from UWP apps
+Function EnableUWPPhoneCalls {
+	Write-Output "Enabling access to phone calls from UWP apps..."
+	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Name "LetAppsAccessPhone" -ErrorAction SilentlyContinue
+}
+
+# Disable access to call history from UWP apps
+Function DisableUWPCallHistory {
+	Write-Output "Disabling access to call history from UWP apps..."
+	If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy")) {
+		New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Force | Out-Null
+	}
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Name "LetAppsAccessCallHistory" -Type DWord -Value 2
+}
+
+# Enable access to call history from UWP apps
+Function EnableUWPCallHistory {
+	Write-Output "Enabling access to call history from UWP apps..."
+	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Name "LetAppsAccessCallHistory" -ErrorAction SilentlyContinue
+}
+
+# Disable access to email from UWP apps
+Function DisableUWPEmail {
+	Write-Output "Disabling access to email from UWP apps..."
+	If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy")) {
+		New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Force | Out-Null
+	}
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Name "LetAppsAccessEmail" -Type DWord -Value 2
+}
+
+# Enable access to email from UWP apps
+Function EnableUWPEmail {
+	Write-Output "Enabling access to email from UWP apps..."
+	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Name "LetAppsAccessEmail" -ErrorAction SilentlyContinue
+}
+
+# Disable access to tasks from UWP apps
+Function DisableUWPTasks {
+	Write-Output "Disabling access to tasks from UWP apps..."
+	If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy")) {
+		New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Force | Out-Null
+	}
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Name "LetAppsAccessTasks" -Type DWord -Value 2
+}
+
+# Enable access to tasks from UWP apps
+Function EnableUWPTasks {
+	Write-Output "Enabling access to tasks from UWP apps..."
+	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Name "LetAppsAccessTasks" -ErrorAction SilentlyContinue
+}
+
+# Disable access to messaging (SMS, MMS) from UWP apps
+Function DisableUWPMessaging {
+	Write-Output "Disabling access to messaging from UWP apps..."
+	If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy")) {
+		New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Force | Out-Null
+	}
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Name "LetAppsAccessMessaging" -Type DWord -Value 2
+}
+
+# Enable access to messaging from UWP apps
+Function EnableUWPMessaging {
+	Write-Output "Enabling access to messaging from UWP apps..."
+	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Name "LetAppsAccessMessaging" -ErrorAction SilentlyContinue
+}
+
+# Disable access to radios (e.g. Bluetooth) from UWP apps
+Function DisableUWPRadios {
+	Write-Output "Disabling access to radios from UWP apps..."
+	If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy")) {
+		New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Force | Out-Null
+	}
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Name "LetAppsAccessRadios" -Type DWord -Value 2
+}
+
+# Enable access to radios from UWP apps
+Function EnableUWPRadios {
+	Write-Output "Enabling access to radios from UWP apps..."
+	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Name "LetAppsAccessRadios" -ErrorAction SilentlyContinue
+}
+
+# Disable access to other devices (unpaired, beacons, TVs etc.) from UWP apps
+Function DisableUWPOtherDevices {
+	Write-Output "Disabling access to other devices from UWP apps..."
+	If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy")) {
+		New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Force | Out-Null
+	}
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Name "LetAppsSyncWithDevices" -Type DWord -Value 2
+}
+
+# Enable access to other devices from UWP apps
+Function EnableUWPOtherDevices {
+	Write-Output "Enabling access to other devices from UWP apps..."
+	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Name "LetAppsSyncWithDevices" -ErrorAction SilentlyContinue
+}
+
+# Disable access to diagnostic information from UWP apps
+Function DisableUWPDiagInfo {
+	Write-Output "Disabling access to diagnostic information from UWP apps..."
+	If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy")) {
+		New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Force | Out-Null
+	}
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Name "LetAppsGetDiagnosticInfo" -Type DWord -Value 2
+}
+
+# Enable access to diagnostic information from UWP apps
+Function EnableUWPDiagInfo {
+	Write-Output "Enabling access to diagnostic information from UWP apps..."
+	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" -Name "LetAppsGetDiagnosticInfo" -ErrorAction SilentlyContinue
+}
+
+# Disable access to libraries and file system from UWP apps
+Function DisableUWPFileSystem {
+	Write-Output "Disabling access to libraries and file system from UWP apps..."
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\documentsLibrary" -Name "Value" -Type String -Value "Deny"
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\picturesLibrary" -Name "Value" -Type String -Value "Deny"
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\videosLibrary" -Name "Value" -Type String -Value "Deny"
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\broadFileSystemAccess" -Name "Value" -Type String -Value "Deny"
+}
+
+# Enable access to libraries and file system from UWP apps
+Function EnableUWPFileSystem {
+	Write-Output "Enabling access to libraries and file system from UWP apps..."
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\documentsLibrary" -Name "Value" -Type String -Value "Allow"
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\picturesLibrary" -Name "Value" -Type String -Value "Allow"
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\videosLibrary" -Name "Value" -Type String -Value "Allow"
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\broadFileSystemAccess" -Name "Value" -Type String -Value "Allow"
+}
+
+# Disable UWP apps swap file
+# This disables creation and use of swapfile.sys and frees 256 MB of disk space. Swapfile.sys is used only by UWP apps. The tweak has no effect on the real swap in pagefile.sys.
+Function DisableUWPSwapFile {
+	Write-Output "Disabling UWP apps swap file..."
+	Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" -Name "SwapfileControl" -Type Dword -Value 0
+}
+
+# Enable UWP apps swap file
+Function EnableUWPSwapFile {
+	Write-Output "Enabling UWP apps swap file..."
+	Remove-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" -Name "SwapfileControl" -ErrorAction SilentlyContinue
+}
+
+##########
+#endregion UWP Privacy Tweaks
+##########
+
+
+
+##########
 #region Security Tweaks
 ##########
 
@@ -508,110 +866,15 @@ Function DisableSharingMappedDrives {
 # Disable implicit administrative shares
 Function DisableAdminShares {
 	Write-Output "Disabling implicit administrative shares..."
+	Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" -Name "AutoShareServer" -Type DWord -Value 0
 	Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" -Name "AutoShareWks" -Type DWord -Value 0
 }
 
 # Enable implicit administrative shares
 Function EnableAdminShares {
 	Write-Output "Enabling implicit administrative shares..."
+	Remove-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" -Name "AutoShareServer" -ErrorAction SilentlyContinue
 	Remove-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" -Name "AutoShareWks" -ErrorAction SilentlyContinue
-}
-
-# Disable obsolete SMB 1.0 protocol - Disabled by default since 1709
-Function DisableSMB1 {
-	Write-Output "Disabling SMB 1.0 protocol..."
-	Set-SmbServerConfiguration -EnableSMB1Protocol $false -Force
-}
-
-# Enable obsolete SMB 1.0 protocol - Disabled by default since 1709
-Function EnableSMB1 {
-	Write-Output "Enabling SMB 1.0 protocol..."
-	Set-SmbServerConfiguration -EnableSMB1Protocol $true -Force
-}
-
-# Disable SMB Server - Completely disables file and printer sharing, but leaves the system able to connect to another SMB server as a client
-# Note: Do not run this if you plan to use Docker and Shared Drives (as it uses SMB internally), see https://github.com/Disassembler0/Win10-Initial-Setup-Script/issues/216
-Function DisableSMBServer {
-	Write-Output "Disabling SMB Server..."
-	Set-SmbServerConfiguration -EnableSMB1Protocol $false -Force
-	Set-SmbServerConfiguration -EnableSMB2Protocol $false -Force
-}
-
-# Enable SMB Server
-Function EnableSMBServer {
-	Write-Output "Enabling SMB Server..."
-	Set-SmbServerConfiguration -EnableSMB2Protocol $true -Force
-}
-
-# Disable Link-Local Multicast Name Resolution (LLMNR) protocol
-Function DisableLLMNR {
-	Write-Output "Disabling LLMNR..."
-	If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\DNSClient")) {
-		New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\DNSClient" -Force | Out-Null
-	}
-	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\DNSClient" -Name "EnableMulticast" -Type DWord -Value 0
-}
-
-# Enable Link-Local Multicast Name Resolution (LLMNR) protocol
-Function EnableLLMNR {
-	Write-Output "Enabling LLMNR..."
-	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\DNSClient" -Name "EnableMulticast" -ErrorAction SilentlyContinue
-}
-
-# Disable Network Connectivity Status Indicator active test
-# Note: This may reduce the ability of OS and other components to determine internet access, however protects against a specific type of zero-click attack.
-# See https://github.com/Disassembler0/Win10-Initial-Setup-Script/pull/111 for details
-Function DisableNCSIProbe {
-	Write-Output "Disabling NCSI active test..."
-	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\NetworkConnectivityStatusIndicator" -Name "NoActiveProbe" -Type DWord -Value 1
-}
-
-# Enable Network Connectivity Status Indicator active test
-Function EnableNCSIProbe {
-	Write-Output "Enabling NCSI active test..."
-	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\NetworkConnectivityStatusIndicator" -Name "NoActiveProbe" -ErrorAction SilentlyContinue
-}
-
-# Set current network profile to private (allow file sharing, device discovery, etc.)
-Function SetCurrentNetworkPrivate {
-	Write-Output "Setting current network profile to private..."
-	Set-NetConnectionProfile -NetworkCategory Private
-}
-
-# Set current network profile to public (deny file sharing, device discovery, etc.)
-Function SetCurrentNetworkPublic {
-	Write-Output "Setting current network profile to public..."
-	Set-NetConnectionProfile -NetworkCategory Public
-}
-
-# Set unknown networks profile to private (allow file sharing, device discovery, etc.)
-Function SetUnknownNetworksPrivate {
-	Write-Output "Setting unknown networks profile to private..."
-	If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\CurrentVersion\NetworkList\Signatures\010103000F0000F0010000000F0000F0C967A3643C3AD745950DA7859209176EF5B87C875FA20DF21951640E807D7C24")) {
-		New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\CurrentVersion\NetworkList\Signatures\010103000F0000F0010000000F0000F0C967A3643C3AD745950DA7859209176EF5B87C875FA20DF21951640E807D7C24" -Force | Out-Null
-	}
-	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\CurrentVersion\NetworkList\Signatures\010103000F0000F0010000000F0000F0C967A3643C3AD745950DA7859209176EF5B87C875FA20DF21951640E807D7C24" -Name "Category" -Type DWord -Value 1
-}
-
-# Set unknown networks profile to public (deny file sharing, device discovery, etc.)
-Function SetUnknownNetworksPublic {
-	Write-Output "Setting unknown networks profile to public..."
-	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\CurrentVersion\NetworkList\Signatures\010103000F0000F0010000000F0000F0C967A3643C3AD745950DA7859209176EF5B87C875FA20DF21951640E807D7C24" -Name "Category" -ErrorAction SilentlyContinue
-}
-
-# Disable automatic installation of network devices
-Function DisableNetDevicesAutoInst {
-	Write-Output "Disabling automatic installation of network devices..."
-	If (!(Test-Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\NcdAutoSetup\Private")) {
-		New-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\NcdAutoSetup\Private" -Force | Out-Null
-	}
-	Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\NcdAutoSetup\Private" -Name "AutoSetup" -Type DWord -Value 0
-}
-
-# Enable automatic installation of network devices
-Function EnableNetDevicesAutoInst {
-	Write-Output "Enabling automatic installation of network devices..."
-	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\NcdAutoSetup\Private" -Name "AutoSetup" -ErrorAction SilentlyContinue
 }
 
 # Disable Firewall
@@ -713,6 +976,8 @@ Function DisableCtrldFolderAccess {
 }
 
 # Enable Core Isolation Memory Integrity - Part of Windows Defender System Guard virtualization-based security - Applicable since 1803
+# Warning: This may cause old applications and drivers to crash or even cause BSOD
+# Problems were confirmed with old video drivers (Intel HD Graphics for 2nd gen., Radeon HD 6850), and old antivirus software (Kaspersky Endpoint Security 10.2, 11.2)
 Function EnableCIMemoryIntegrity {
 	Write-Output "Enabling Core Isolation Memory Integrity..."
 	If (!(Test-Path "HKLM:\SYSTEM\CurrentControlSet\Control\DeviceGuard\Scenarios\HypervisorEnforcedCodeIntegrity")) {
@@ -782,15 +1047,15 @@ Function EnableScriptHost {
 	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows Script Host\Settings" -Name "Enabled" -ErrorAction SilentlyContinue
 }
 
-# Enable strong cryptography for .NET Framework (version 4 and above)
-# https://stackoverflow.com/questions/36265534/invoke-webrequest-ssl-fails
+# Enable strong cryptography for old versions of .NET Framework (4.6 and newer have strong crypto enabled by default)
+# https://docs.microsoft.com/en-us/dotnet/framework/network-programming/tls#schusestrongcrypto
 Function EnableDotNetStrongCrypto {
 	Write-output "Enabling .NET strong cryptography..."
 	Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\.NETFramework\v4.0.30319" -Name "SchUseStrongCrypto" -Type DWord -Value 1
 	Set-ItemProperty -Path "HKLM:\SOFTWARE\Wow6432Node\Microsoft\.NETFramework\v4.0.30319" -Name "SchUseStrongCrypto" -Type DWord -Value 1
 }
 
-# Disable strong cryptography for .NET Framework (version 4 and above)
+# Disable strong cryptography for old versions of .NET Framework
 Function DisableDotNetStrongCrypto {
 	Write-output "Disabling .NET strong cryptography..."
 	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\.NETFramework\v4.0.30319" -Name "SchUseStrongCrypto" -ErrorAction SilentlyContinue
@@ -856,13 +1121,13 @@ Function EnableRecoveryAndReset {
 	reagentc /enable 2>&1 | Out-Null
 }
 
-# Set Data Execution Prevention (DEP) policy to OptOut
+# Set Data Execution Prevention (DEP) policy to OptOut - Turn on DEP for all 32-bit applications except manually excluded. 64-bit applications have DEP always on.
 Function SetDEPOptOut {
 	Write-Output "Setting Data Execution Prevention (DEP) policy to OptOut..."
 	bcdedit /set `{current`} nx OptOut | Out-Null
 }
 
-# Set Data Execution Prevention (DEP) policy to OptIn
+# Set Data Execution Prevention (DEP) policy to OptIn - Turn on DEP only for essential 32-bit Windows executables and manually included applications. 64-bit applications have DEP always on.
 Function SetDEPOptIn {
 	Write-Output "Setting Data Execution Prevention (DEP) policy to OptIn..."
 	bcdedit /set `{current`} nx OptIn | Out-Null
@@ -870,6 +1135,262 @@ Function SetDEPOptIn {
 
 ##########
 #endregion Security Tweaks
+##########
+
+
+
+##########
+#region Network Tweaks
+##########
+
+# Set current network profile to private (allow file sharing, device discovery, etc.)
+Function SetCurrentNetworkPrivate {
+	Write-Output "Setting current network profile to private..."
+	Set-NetConnectionProfile -NetworkCategory Private
+}
+
+# Set current network profile to public (deny file sharing, device discovery, etc.)
+Function SetCurrentNetworkPublic {
+	Write-Output "Setting current network profile to public..."
+	Set-NetConnectionProfile -NetworkCategory Public
+}
+
+# Set unknown networks profile to private (allow file sharing, device discovery, etc.)
+Function SetUnknownNetworksPrivate {
+	Write-Output "Setting unknown networks profile to private..."
+	If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\CurrentVersion\NetworkList\Signatures\010103000F0000F0010000000F0000F0C967A3643C3AD745950DA7859209176EF5B87C875FA20DF21951640E807D7C24")) {
+		New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\CurrentVersion\NetworkList\Signatures\010103000F0000F0010000000F0000F0C967A3643C3AD745950DA7859209176EF5B87C875FA20DF21951640E807D7C24" -Force | Out-Null
+	}
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\CurrentVersion\NetworkList\Signatures\010103000F0000F0010000000F0000F0C967A3643C3AD745950DA7859209176EF5B87C875FA20DF21951640E807D7C24" -Name "Category" -Type DWord -Value 1
+}
+
+# Set unknown networks profile to public (deny file sharing, device discovery, etc.)
+Function SetUnknownNetworksPublic {
+	Write-Output "Setting unknown networks profile to public..."
+	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\CurrentVersion\NetworkList\Signatures\010103000F0000F0010000000F0000F0C967A3643C3AD745950DA7859209176EF5B87C875FA20DF21951640E807D7C24" -Name "Category" -ErrorAction SilentlyContinue
+}
+
+# Disable automatic installation of network devices
+Function DisableNetDevicesAutoInst {
+	Write-Output "Disabling automatic installation of network devices..."
+	If (!(Test-Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\NcdAutoSetup\Private")) {
+		New-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\NcdAutoSetup\Private" -Force | Out-Null
+	}
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\NcdAutoSetup\Private" -Name "AutoSetup" -Type DWord -Value 0
+}
+
+# Enable automatic installation of network devices
+Function EnableNetDevicesAutoInst {
+	Write-Output "Enabling automatic installation of network devices..."
+	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\NcdAutoSetup\Private" -Name "AutoSetup" -ErrorAction SilentlyContinue
+}
+
+# Stop and disable Home Groups services - Not applicable since 1803. Not applicable to Server
+Function DisableHomeGroups {
+	Write-Output "Stopping and disabling Home Groups services..."
+	If (Get-Service "HomeGroupListener" -ErrorAction SilentlyContinue) {
+		Stop-Service "HomeGroupListener" -WarningAction SilentlyContinue
+		Set-Service "HomeGroupListener" -StartupType Disabled
+	}
+	If (Get-Service "HomeGroupProvider" -ErrorAction SilentlyContinue) {
+		Stop-Service "HomeGroupProvider" -WarningAction SilentlyContinue
+		Set-Service "HomeGroupProvider" -StartupType Disabled
+	}
+}
+
+# Enable and start Home Groups services - Not applicable since 1803. Not applicable to Server
+Function EnableHomeGroups {
+	Write-Output "Starting and enabling Home Groups services..."
+	Set-Service "HomeGroupListener" -StartupType Manual
+	Set-Service "HomeGroupProvider" -StartupType Manual
+	Start-Service "HomeGroupProvider" -WarningAction SilentlyContinue
+}
+
+# Disable obsolete SMB 1.0 protocol - Disabled by default since 1709
+Function DisableSMB1 {
+	Write-Output "Disabling SMB 1.0 protocol..."
+	Set-SmbServerConfiguration -EnableSMB1Protocol $false -Force
+}
+
+# Enable obsolete SMB 1.0 protocol - Disabled by default since 1709
+Function EnableSMB1 {
+	Write-Output "Enabling SMB 1.0 protocol..."
+	Set-SmbServerConfiguration -EnableSMB1Protocol $true -Force
+}
+
+# Disable SMB Server - Completely disables file and printer sharing, but leaves the system able to connect to another SMB server as a client
+# Note: Do not run this if you plan to use Docker and Shared Drives (as it uses SMB internally), see https://github.com/Disassembler0/Win10-Initial-Setup-Script/issues/216
+Function DisableSMBServer {
+	Write-Output "Disabling SMB Server..."
+	Set-SmbServerConfiguration -EnableSMB1Protocol $false -Force
+	Set-SmbServerConfiguration -EnableSMB2Protocol $false -Force
+	Disable-NetAdapterBinding -Name "*" -ComponentID "ms_server"
+}
+
+# Enable SMB Server
+Function EnableSMBServer {
+	Write-Output "Enabling SMB Server..."
+	Set-SmbServerConfiguration -EnableSMB2Protocol $true -Force
+	Enable-NetAdapterBinding -Name "*" -ComponentID "ms_server"
+}
+
+# Disable NetBIOS over TCP/IP on all currently installed network interfaces
+Function DisableNetBIOS {
+	Write-Output "Disabling NetBIOS over TCP/IP..."
+	Set-ItemProperty "HKLM:\SYSTEM\CurrentControlSet\services\NetBT\Parameters\Interfaces\Tcpip*" -Name "NetbiosOptions" -Type DWord -Value 2
+}
+
+# Enable NetBIOS over TCP/IP on all currently installed network interfaces
+Function EnableNetBIOS {
+	Write-Output "Enabling NetBIOS over TCP/IP..."
+	Set-ItemProperty "HKLM:\SYSTEM\CurrentControlSet\services\NetBT\Parameters\Interfaces\Tcpip*" -Name "NetbiosOptions" -Type DWord -Value 0
+}
+
+# Disable Link-Local Multicast Name Resolution (LLMNR) protocol
+Function DisableLLMNR {
+	Write-Output "Disabling Link-Local Multicast Name Resolution (LLMNR)..."
+	If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\DNSClient")) {
+		New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\DNSClient" -Force | Out-Null
+	}
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\DNSClient" -Name "EnableMulticast" -Type DWord -Value 0
+}
+
+# Enable Link-Local Multicast Name Resolution (LLMNR) protocol
+Function EnableLLMNR {
+	Write-Output "Enabling Link-Local Multicast Name Resolution (LLMNR)..."
+	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\DNSClient" -Name "EnableMulticast" -ErrorAction SilentlyContinue
+}
+
+# Disable Local-Link Discovery Protocol (LLDP) for all installed network interfaces
+Function DisableLLDP {
+	Write-Output "Disabling Local-Link Discovery Protocol (LLDP)..."
+	Disable-NetAdapterBinding -Name "*" -ComponentID "ms_lldp"
+}
+
+# Enable Local-Link Discovery Protocol (LLDP) for all installed network interfaces
+Function EnableLLDP {
+	Write-Output "Enabling Local-Link Discovery Protocol (LLDP)..."
+	Enable-NetAdapterBinding -Name "*" -ComponentID "ms_lldp"
+}
+
+# Disable Local-Link Topology Discovery (LLTD) for all installed network interfaces
+Function DisableLLTD {
+	Write-Output "Disabling Local-Link Topology Discovery (LLTD)..."
+	Disable-NetAdapterBinding -Name "*" -ComponentID "ms_lltdio"
+	Disable-NetAdapterBinding -Name "*" -ComponentID "ms_rspndr"
+}
+
+# Enable Local-Link Topology Discovery (LLTD) for all installed network interfaces
+Function EnableLLTD {
+	Write-Output "Enabling Local-Link Topology Discovery (LLTD)..."
+	Enable-NetAdapterBinding -Name "*" -ComponentID "ms_lltdio"
+	Enable-NetAdapterBinding -Name "*" -ComponentID "ms_rspndr"
+}
+
+# Disable Client for Microsoft Networks for all installed network interfaces
+Function DisableMSNetClient {
+	Write-Output "Disabling Client for Microsoft Networks..."
+	Disable-NetAdapterBinding -Name "*" -ComponentID "ms_msclient"
+}
+
+# Enable Client for Microsoft Networks for all installed network interfaces
+Function EnableMSNetClient {
+	Write-Output "Enabling Client for Microsoft Networks..."
+	Enable-NetAdapterBinding -Name "*" -ComponentID "ms_msclient"
+}
+
+# Disable Quality of Service (QoS) packet scheduler for all installed network interfaces
+Function DisableQoS {
+	Write-Output "Disabling Quality of Service (QoS) packet scheduler..."
+	Disable-NetAdapterBinding -Name "*" -ComponentID "ms_pacer"
+}
+
+# Enable Quality of Service (QoS) packet scheduler for all installed network interfaces
+Function EnableQoS {
+	Write-Output "Enabling Quality of Service (QoS) packet scheduler..."
+	Enable-NetAdapterBinding -Name "*" -ComponentID "ms_pacer"
+}
+
+# Disable IPv4 stack for all installed network interfaces
+Function DisableIPv4 {
+	Write-Output "Disabling IPv4 stack..."
+	Disable-NetAdapterBinding -Name "*" -ComponentID "ms_tcpip"
+}
+
+# Enable IPv4 stack for all installed network interfaces
+Function EnableIPv4 {
+	Write-Output "Enabling IPv4 stack..."
+	Enable-NetAdapterBinding -Name "*" -ComponentID "ms_tcpip"
+}
+
+# Disable IPv6 stack for all installed network interfaces
+Function DisableIPv6 {
+	Write-Output "Disabling IPv6 stack..."
+	Disable-NetAdapterBinding -Name "*" -ComponentID "ms_tcpip6"
+}
+
+# Enable IPv6 stack for all installed network interfaces
+Function EnableIPv6 {
+	Write-Output "Enabling IPv6 stack..."
+	Enable-NetAdapterBinding -Name "*" -ComponentID "ms_tcpip6"
+}
+
+# Disable Network Connectivity Status Indicator active test
+# Note: This may reduce the ability of OS and other components to determine internet access, however protects against a specific type of zero-click attack.
+# See https://github.com/Disassembler0/Win10-Initial-Setup-Script/pull/111 for details
+Function DisableNCSIProbe {
+	Write-Output "Disabling Network Connectivity Status Indicator (NCSI) active test..."
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\NetworkConnectivityStatusIndicator" -Name "NoActiveProbe" -Type DWord -Value 1
+}
+
+# Enable Network Connectivity Status Indicator active test
+Function EnableNCSIProbe {
+	Write-Output "Enabling Network Connectivity Status Indicator (NCSI) active test..."
+	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\NetworkConnectivityStatusIndicator" -Name "NoActiveProbe" -ErrorAction SilentlyContinue
+}
+
+# Disable Internet Connection Sharing (e.g. mobile hotspot)
+Function DisableConnectionSharing {
+	Write-Output "Disabling Internet Connection Sharing..."
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Network Connections" -Name "NC_ShowSharedAccessUI" -Type DWord -Value 0
+}
+
+# Enable Internet Connection Sharing (e.g. mobile hotspot)
+Function EnableConnectionSharing {
+	Write-Output "Enabling Internet Connection Sharing..."
+	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Network Connections" -Name "NC_ShowSharedAccessUI" -ErrorAction SilentlyContinue
+}
+
+# Disable Remote Assistance - Not applicable to Server (unless Remote Assistance is explicitly installed)
+Function DisableRemoteAssistance {
+	Write-Output "Disabling Remote Assistance..."
+	Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Remote Assistance" -Name "fAllowToGetHelp" -Type DWord -Value 0
+	Get-WindowsCapability -Online | Where-Object { $_.Name -like "App.Support.QuickAssist*" } | Remove-WindowsCapability -Online | Out-Null
+}
+
+# Enable Remote Assistance - Not applicable to Server (unless Remote Assistance is explicitly installed)
+Function EnableRemoteAssistance {
+	Write-Output "Enabling Remote Assistance..."
+	Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Remote Assistance" -Name "fAllowToGetHelp" -Type DWord -Value 1
+	Get-WindowsCapability -Online | Where-Object { $_.Name -like "App.Support.QuickAssist*" } | Add-WindowsCapability -Online | Out-Null
+}
+
+# Enable Remote Desktop
+Function EnableRemoteDesktop {
+	Write-Output "Enabling Remote Desktop..."
+	Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server" -Name "fDenyTSConnections" -Type DWord -Value 0
+	Enable-NetFirewallRule -Name "RemoteDesktop*"
+}
+
+# Disable Remote Desktop
+Function DisableRemoteDesktop {
+	Write-Output "Disabling Remote Desktop..."
+	Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server" -Name "fDenyTSConnections" -Type DWord -Value 1
+	Disable-NetFirewallRule -Name "RemoteDesktop*"
+}
+
+##########
+#endregion Network Tweaks
 ##########
 
 
@@ -905,9 +1426,7 @@ Function DisableUpdateDriver {
 	If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DriverSearching")) {
 		New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DriverSearching" -Force | Out-Null
 	}
-	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DriverSearching" -Name "DontPromptForWindowsUpdate" -Type DWord -Value 1
-	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DriverSearching" -Name "DontSearchWindowsUpdate" -Type DWord -Value 1
-	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DriverSearching" -Name "DriverUpdateWizardWuSearchEnabled" -Type DWord -Value 0
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DriverSearching" -Name "SearchOrderConfig" -Type DWord -Value 0
 	If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate")) {
 		New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate" | Out-Null
 	}
@@ -918,49 +1437,84 @@ Function DisableUpdateDriver {
 Function EnableUpdateDriver {
 	Write-Output "Enabling driver offering through Windows Update..."
 	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Device Metadata" -Name "PreventDeviceMetadataFromNetwork" -ErrorAction SilentlyContinue
-	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DriverSearching" -Name "DontPromptForWindowsUpdate" -ErrorAction SilentlyContinue
-	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DriverSearching" -Name "DontSearchWindowsUpdate" -ErrorAction SilentlyContinue
-	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DriverSearching" -Name "DriverUpdateWizardWuSearchEnabled" -ErrorAction SilentlyContinue
+	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DriverSearching" -Name "SearchOrderConfig" -ErrorAction SilentlyContinue
 	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate" -Name "ExcludeWUDriversInQualityUpdate" -ErrorAction SilentlyContinue
 }
 
-# Disable Windows Update automatic restart
-# Note: This doesn't disable the need for the restart but rather tries to ensure that the restart doesn't happen in the least expected moment. Allow the machine to restart as soon as possible anyway.
-Function DisableUpdateRestart {
-	Write-Output "Disabling Windows Update automatic restart..."
+# Enable receiving updates for other Microsoft products via Windows Update
+Function EnableUpdateMSProducts {
+	Write-Output "Enabling updates for other Microsoft products..."
+	(New-Object -ComObject Microsoft.Update.ServiceManager).AddService2("7971f918-a847-4430-9279-4a52d1efe18d", 7, "") | Out-Null
+}
+
+# Disable receiving updates for other Microsoft products via Windows Update
+Function DisableUpdateMSProducts {
+	Write-Output "Disabling updates for other Microsoft products..."
+	If ((New-Object -ComObject Microsoft.Update.ServiceManager).Services | Where-Object { $_.ServiceID -eq "7971f918-a847-4430-9279-4a52d1efe18d"}) {
+		(New-Object -ComObject Microsoft.Update.ServiceManager).RemoveService("7971f918-a847-4430-9279-4a52d1efe18d") | Out-Null
+	}
+}
+
+# Disable Windows Update automatic downloads
+Function DisableUpdateAutoDownload {
+	Write-Output "Disabling Windows Update automatic downloads..."
 	If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU")) {
 		New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU" -Force | Out-Null
 	}
-	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU" -Name "NoAutoRebootWithLoggedOnUsers" -Type DWord -Value 1
-	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU" -Name "AUPowerManagement" -Type DWord -Value 0
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU" -Name "AUOptions" -Type DWord -Value 2
 }
 
-# Enable Windows Update automatic restart
+# Enable Windows Update automatic downloads
+Function EnableUpdateAutoDownload {
+	Write-Output "Enabling Windows Update automatic downloads..."
+	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU" -Name "AUOptions" -ErrorAction SilentlyContinue
+}
+
+# Disable automatic restart after Windows Update installation
+# The tweak is slightly experimental, as it registers a dummy debugger for MusNotification.exe
+# which blocks the restart prompt executable from running, thus never schedulling the restart
+Function DisableUpdateRestart {
+	Write-Output "Disabling Windows Update automatic restart..."
+	If (!(Test-Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\MusNotification.exe")) {
+		New-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\MusNotification.exe" -Force | Out-Null
+	}
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\MusNotification.exe" -Name "Debugger" -Type String -Value "cmd.exe"
+}
+
+# Enable automatic restart after Windows Update installation
 Function EnableUpdateRestart {
 	Write-Output "Enabling Windows Update automatic restart..."
-	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU" -Name "NoAutoRebootWithLoggedOnUsers" -ErrorAction SilentlyContinue
+	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\MusNotification.exe" -Name "Debugger" -ErrorAction SilentlyContinue
+}
+
+# Disable nightly wake-up for Automatic Maintenance and Windows Updates
+Function DisableMaintenanceWakeUp {
+	Write-Output "Disabling nightly wake-up for Automatic Maintenance..."
+	If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU")) {
+		New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU" -Force | Out-Null
+	}
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU" -Name "AUPowerManagement" -Type DWord -Value 0
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\Maintenance" -Name "WakeUp" -Type DWord -Value 0
+}
+
+# Enable nightly wake-up for Automatic Maintenance and Windows Updates
+Function EnableMaintenanceWakeUp {
+	Write-Output "Enabling nightly wake-up for Automatic Maintenance..."
 	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU" -Name "AUPowerManagement" -ErrorAction SilentlyContinue
+	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\Maintenance" -Name "WakeUp" -ErrorAction SilentlyContinue
 }
 
-# Stop and disable Home Groups services - Not applicable since 1803. Not applicable to Server
-Function DisableHomeGroups {
-	Write-Output "Stopping and disabling Home Groups services..."
-	If (Get-Service "HomeGroupListener" -ErrorAction SilentlyContinue) {
-		Stop-Service "HomeGroupListener" -WarningAction SilentlyContinue
-		Set-Service "HomeGroupListener" -StartupType Disabled
-	}
-	If (Get-Service "HomeGroupProvider" -ErrorAction SilentlyContinue) {
-		Stop-Service "HomeGroupProvider" -WarningAction SilentlyContinue
-		Set-Service "HomeGroupProvider" -StartupType Disabled
-	}
+# Disable Automatic Restart Sign-on - Applicable since 1903
+# See https://docs.microsoft.com/en-us/windows-server/identity/ad-ds/manage/component-updates/winlogon-automatic-restart-sign-on--arso-
+Function DisableAutoRestartSignOn {
+	Write-Output "Disabling Automatic Restart Sign-on..."
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Name "DisableAutomaticRestartSignOn" -Type DWord -Value 1
 }
 
-# Enable and start Home Groups services - Not applicable since 1803. Not applicable to Server
-Function EnableHomeGroups {
-	Write-Output "Starting and enabling Home Groups services..."
-	Set-Service "HomeGroupListener" -StartupType Manual
-	Set-Service "HomeGroupProvider" -StartupType Manual
-	Start-Service "HomeGroupProvider" -WarningAction SilentlyContinue
+# Enable Automatic Restart Sign-on - Applicable since 1903
+Function EnableAutoRestartSignOn {
+	Write-Output "Enabling Automatic Restart Sign-on..."
+	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Name "DisableAutomaticRestartSignOn" -ErrorAction SilentlyContinue
 }
 
 # Disable Shared Experiences - Applicable since 1703. Not applicable to Server
@@ -979,32 +1533,16 @@ Function EnableSharedExperiences {
 	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\CDP" -Name "RomeSdkChannelUserAuthzPolicy" -Type DWord -Value 1
 }
 
-# Disable Remote Assistance - Not applicable to Server (unless Remote Assistance is explicitly installed)
-Function DisableRemoteAssistance {
-	Write-Output "Disabling Remote Assistance..."
-	Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Remote Assistance" -Name "fAllowToGetHelp" -Type DWord -Value 0
+# Enable Clipboard History - Applicable since 1809. Not applicable to Server
+Function EnableClipboardHistory {
+	Write-Output "Enabling Clipboard History..."
+	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Clipboard" -Name "EnableClipboardHistory" -Type DWord -Value 1
 }
 
-# Enable Remote Assistance - Not applicable to Server (unless Remote Assistance is explicitly installed)
-Function EnableRemoteAssistance {
-	Write-Output "Enabling Remote Assistance..."
-	Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Remote Assistance" -Name "fAllowToGetHelp" -Type DWord -Value 1
-}
-
-# Enable Remote Desktop w/o Network Level Authentication
-Function EnableRemoteDesktop {
-	Write-Output "Enabling Remote Desktop w/o Network Level Authentication..."
-	Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server" -Name "fDenyTSConnections" -Type DWord -Value 0
-	Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp" -Name "UserAuthentication" -Type DWord -Value 0
-	Enable-NetFirewallRule -Name "RemoteDesktop*"
-}
-
-# Disable Remote Desktop
-Function DisableRemoteDesktop {
-	Write-Output "Disabling Remote Desktop..."
-	Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server" -Name "fDenyTSConnections" -Type DWord -Value 1
-	Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp" -Name "UserAuthentication" -Type DWord -Value 1
-	Disable-NetFirewallRule -Name "RemoteDesktop*"
+# Disable Clipboard History - Applicable since 1809. Not applicable to Server
+Function DisableClipboardHistory {
+	Write-Output "Disabling Clipboard History..."
+	Remove-ItemProperty -Path "HKCU:\Software\Microsoft\Clipboard" -Name "EnableClipboardHistory" -ErrorAction SilentlyContinue
 }
 
 # Disable Autoplay
@@ -1107,29 +1645,43 @@ Function EnableIndexing {
 	Start-Service "WSearch" -WarningAction SilentlyContinue
 }
 
-# Disable Modern UI swap file
-# This disables creation and use of swapfile.sys and frees 256 MB of disk space. Swapfile.sys is used only by Modern UI apps. The tweak has no effect on the real swap in pagefile.sys.
-Function DisableSwapFile {
-	Write-Output "Disabling Modern UI swap file..."
-	Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" -Name "SwapfileControl" -Type Dword -Value 0
+# Disable Recycle Bin - Files will be permanently deleted without placing into Recycle Bin
+Function DisableRecycleBin {
+	Write-Output "Disabling Recycle Bin..."
+	If (!(Test-Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer")) {
+		New-Item -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" | Out-Null
+	}
+	Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" -Name "NoRecycleFiles" -Type DWord -Value 1
 }
 
-# Enable Modern UI swap file
-Function EnableSwapFile {
-	Write-Output "Enabling Modern UI swap file..."
-	Remove-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" -Name "SwapfileControl" -ErrorAction SilentlyContinue
+# Enable Recycle Bin
+Function EnableRecycleBin {
+	Write-Output "Enable Recycle Bin..."
+	Remove-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" -Name "NoRecycleFiles" -ErrorAction SilentlyContinue
 }
 
-# Disable the updating of the NTFS Last Access Time stamps
+# Enable NTFS paths with length over 260 characters
+Function EnableNTFSLongPaths {
+	Write-Output "Enabling NTFS paths with length over 260 characters..."
+	Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "LongPathsEnabled" -Type DWord -Value 1
+}
+
+# Disable NTFS paths with length over 260 characters
+Function DisableNTFSLongPaths {
+	Write-Output "Disabling NTFS paths with length over 260 characters..."
+	Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "LongPathsEnabled" -Type DWord -Value 0
+}
+
+# Disable updating of NTFS last access timestamps
 Function DisableNTFSLastAccess {
-	Write-Output "Disabling the updating of the Last Access Time stamps..."
+	Write-Output "Disabling updating of NTFS last access timestamps..."
 	# User Managed, Last Access Updates Disabled
 	fsutil behavior set DisableLastAccess 1 | Out-Null
 }
 
-# Enable the updating of the NTFS Last Access Time stamps
+# Enable updating of NTFS last access timestamps
 Function EnableNTFSLastAccess {
-	Write-Output "Enabling the updating of the Last Access Time stamps..."
+	Write-Output "Enabling updating of NTFS last access timestamps..."
 	If ([System.Environment]::OSVersion.Version.Build -ge 17134) {
 		# System Managed, Last Access Updates Enabled
 		fsutil behavior set DisableLastAccess 2 | Out-Null
@@ -1325,6 +1877,18 @@ Function ShowShutdownOnLockScreen {
 	Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Name "ShutdownWithoutLogon" -Type DWord -Value 1
 }
 
+# Disable Lock screen Blur - Applicable since 1903
+Function DisableLockScreenBlur {
+	Write-Output "Disabling Lock screen Blur..."
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" -Name "DisableAcrylicBackgroundOnLogon" -Type DWord -Value 1
+}
+
+# Enable Lock screen Blur - Applicable since 1903
+Function EnableLockScreenBlur {
+	Write-Output "Enabling Lock screen Blur..."
+	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" -Name "DisableAcrylicBackgroundOnLogon" -ErrorAction SilentlyContinue
+}
+
 # Disable Aero Shake (minimizing other windows when one is dragged by mouse and shaken)
 Function DisableAeroShake {
 	Write-Output "Disabling Aero Shake..."
@@ -1337,16 +1901,20 @@ Function EnableAeroShake {
 	Remove-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "DisallowShaking" -ErrorAction SilentlyContinue
 }
 
-# Disable Sticky keys prompt
-Function DisableStickyKeys {
-	Write-Output "Disabling Sticky keys prompt..."
+# Disable accessibility keys prompts (Sticky keys, Toggle keys, Filter keys)
+Function DisableAccessibilityKeys {
+	Write-Output "Disabling accessibility keys prompts..."
 	Set-ItemProperty -Path "HKCU:\Control Panel\Accessibility\StickyKeys" -Name "Flags" -Type String -Value "506"
+	Set-ItemProperty -Path "HKCU:\Control Panel\Accessibility\ToggleKeys" -Name "Flags" -Type String -Value "58"
+	Set-ItemProperty -Path "HKCU:\Control Panel\Accessibility\Keyboard Response" -Name "Flags" -Type String -Value "122"
 }
 
-# Enable Sticky keys prompt
-Function EnableStickyKeys {
-	Write-Output "Enabling Sticky keys prompt..."
+# Enable accessibility keys prompts (Sticky keys, Toggle keys, Filter keys)
+Function EnableAccessibilityKeys {
+	Write-Output "Enabling accessibility keys prompts..."
 	Set-ItemProperty -Path "HKCU:\Control Panel\Accessibility\StickyKeys" -Name "Flags" -Type String -Value "510"
+	Set-ItemProperty -Path "HKCU:\Control Panel\Accessibility\ToggleKeys" -Name "Flags" -Type String -Value "62"
+	Set-ItemProperty -Path "HKCU:\Control Panel\Accessibility\Keyboard Response" -Name "Flags" -Type String -Value "126"
 }
 
 # Show Task Manager details - Applicable since 1607
@@ -1501,6 +2069,21 @@ Function HideTrayIcons {
 	Remove-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" -Name "NoAutoTrayNotify" -ErrorAction SilentlyContinue
 }
 
+# Show seconds in taskbar
+Function ShowSecondsInTaskbar {
+	Write-Output "Showing seconds in taskbar..."
+	If (!(Test-Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced")) {
+		New-Item -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" | Out-Null
+	}
+	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "ShowSecondsInSystemClock" -Type DWord -Value 1
+}
+
+# Hide seconds from taskbar
+Function HideSecondsFromTaskbar {
+	Write-Output "Hiding seconds from taskbar..."
+	Remove-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "ShowSecondsInSystemClock" -ErrorAction SilentlyContinue
+}
+
 # Disable search for app in store for unknown extensions
 Function DisableSearchAppInStore {
 	Write-Output "Disabling search for app in store for unknown extensions..."
@@ -1559,6 +2142,26 @@ Function HideMostUsedApps {
 Function ShowMostUsedApps {
 	Write-Output "Showing 'Most used' apps list in the Start Menu..."
 	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" -Name "NoStartMenuMFUprogramsList" -ErrorAction SilentlyContinue
+}
+
+# Set PowerShell instead of Command prompt in Start Button context menu (Win+X) - Default since 1703
+Function SetWinXMenuPowerShell {
+	Write-Output "Setting PowerShell instead of Command prompt in WinX menu..."
+	If ([System.Environment]::OSVersion.Version.Build -le 14393) {
+		Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "DontUsePowerShellOnWinX" -Type DWord -Value 0
+	} Else {
+		Remove-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "DontUsePowerShellOnWinX" -ErrorAction SilentlyContinue
+	}
+}
+
+# Set Command prompt instead of PowerShell in Start Button context menu (Win+X) - Default in 1507 - 1607
+Function SetWinXMenuCmd {
+	Write-Output "Setting Command prompt instead of PowerShell in WinX menu..."
+	If ([System.Environment]::OSVersion.Version.Build -le 14393) {
+		Remove-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "DontUsePowerShellOnWinX" -ErrorAction SilentlyContinue
+	} Else {
+		Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "DontUsePowerShellOnWinX" -Type DWord -Value 1
+	}
 }
 
 # Set Control Panel view to Small icons (Classic)
@@ -1657,16 +2260,28 @@ Function DisableTitleBarColor {
 	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\DWM" -Name "ColorPrevalence" -Type DWord -Value 0
 }
 
-# Enable Dark Theme
-Function EnableDarkTheme {
-	Write-Output "Enabling Dark Theme..."
+# Set Dark Mode for Applications
+Function SetAppsDarkMode {
+	Write-Output "Setting Dark Mode for Applications..."
 	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "AppsUseLightTheme" -Type DWord -Value 0
 }
 
-# Disable Dark Theme
-Function DisableDarkTheme {
-	Write-Output "Disabling Dark Theme..."
-	Remove-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "AppsUseLightTheme" -ErrorAction SilentlyContinue
+# Set Light Mode for Applications
+Function SetAppsLightMode {
+	Write-Output "Setting Light Mode for Applications..."
+	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "AppsUseLightTheme" -Type DWord -Value 1
+}
+
+# Set Light Mode for System - Applicable since 1903
+Function SetSystemLightMode {
+	Write-Output "Setting Light Mode for System..."
+	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "SystemUsesLightTheme" -Type DWord -Value 1
+}
+
+# Set Dark Mode for System - Applicable since 1903
+Function SetSystemDarkMode {
+	Write-Output "Setting Dark Mode for System..."
+	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "SystemUsesLightTheme" -Type DWord -Value 0
 }
 
 # Add secondary en-US keyboard
@@ -1688,7 +2303,7 @@ Function RemoveENKeyboard {
 Function EnableNumlock {
 	Write-Output "Enabling NumLock after startup..."
 	If (!(Test-Path "HKU:")) {
-		New-PSDrive -Name HKU -PSProvider Registry -Root HKEY_USERS | Out-Null
+		New-PSDrive -Name "HKU" -PSProvider "Registry" -Root "HKEY_USERS" | Out-Null
 	}
 	Set-ItemProperty -Path "HKU:\.DEFAULT\Control Panel\Keyboard" -Name "InitialKeyboardIndicators" -Type DWord -Value 2147483650
 	Add-Type -AssemblyName System.Windows.Forms
@@ -1702,7 +2317,7 @@ Function EnableNumlock {
 Function DisableNumlock {
 	Write-Output "Disabling NumLock after startup..."
 	If (!(Test-Path "HKU:")) {
-		New-PSDrive -Name HKU -PSProvider Registry -Root HKEY_USERS | Out-Null
+		New-PSDrive -Name "HKU" -PSProvider "Registry" -Root "HKEY_USERS" | Out-Null
 	}
 	Set-ItemProperty -Path "HKU:\.DEFAULT\Control Panel\Keyboard" -Name "InitialKeyboardIndicators" -Type DWord -Value 2147483648
 	Add-Type -AssemblyName System.Windows.Forms
@@ -1799,6 +2414,45 @@ Function EnableChangingSoundScheme {
 	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Personalization" -Name "NoChangingSoundScheme" -ErrorAction SilentlyContinue
 }
 
+# Enable verbose startup/shutdown status messages
+Function EnableVerboseStatus {
+	Write-Output "Enabling verbose startup/shutdown status messages..."
+	If ((Get-CimInstance -Class "Win32_OperatingSystem").ProductType -eq 1) {
+		Set-ItemProperty -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System" -Name "VerboseStatus" -Type DWord -Value 1
+	} Else {
+		Remove-ItemProperty -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System" -Name "VerboseStatus" -ErrorAction SilentlyContinue
+	}
+}
+
+# Disable verbose startup/shutdown status messages
+Function DisableVerboseStatus {
+	Write-Output "Disabling verbose startup/shutdown status messages..."
+	If ((Get-CimInstance -Class "Win32_OperatingSystem").ProductType -eq 1) {
+		Remove-ItemProperty -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System" -Name "VerboseStatus" -ErrorAction SilentlyContinue
+	} Else {
+		Set-ItemProperty -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System" -Name "VerboseStatus" -Type DWord -Value 0
+	}
+}
+
+# Disable F1 Help key in Explorer and on the Desktop
+Function DisableF1HelpKey {
+	Write-Output "Disabling F1 Help key..."
+	If (!(Test-Path "HKCU:\Software\Classes\TypeLib\{8cec5860-07a1-11d9-b15e-000d56bfe6ee}\1.0\0\win32")) {
+		New-Item -Path "HKCU:\Software\Classes\TypeLib\{8cec5860-07a1-11d9-b15e-000d56bfe6ee}\1.0\0\win32" -Force | Out-Null
+	}
+	Set-ItemProperty -Path "HKCU:\Software\Classes\TypeLib\{8cec5860-07a1-11d9-b15e-000d56bfe6ee}\1.0\0\win32" -Name "(Default)" -Type "String" -Value ""
+	If (!(Test-Path "HKCU:\Software\Classes\TypeLib\{8cec5860-07a1-11d9-b15e-000d56bfe6ee}\1.0\0\win64")) {
+		New-Item -Path "HKCU:\Software\Classes\TypeLib\{8cec5860-07a1-11d9-b15e-000d56bfe6ee}\1.0\0\win64" -Force | Out-Null
+	}
+	Set-ItemProperty -Path "HKCU:\Software\Classes\TypeLib\{8cec5860-07a1-11d9-b15e-000d56bfe6ee}\1.0\0\win64" -Name "(Default)" -Type "String" -Value ""
+}
+
+# Enable F1 Help key in Explorer and on the Desktop
+Function EnableF1HelpKey {
+	Write-Output "Enabling F1 Help key..."
+	Remove-Item "HKCU:\Software\Classes\TypeLib\{8cec5860-07a1-11d9-b15e-000d56bfe6ee}\1.0\0" -Recurse -ErrorAction SilentlyContinue
+}
+
 ##########
 #endregion UI Tweaks
 ##########
@@ -1808,6 +2462,21 @@ Function EnableChangingSoundScheme {
 ##########
 #region Explorer UI Tweaks
 ##########
+
+# Show full directory path in Explorer title bar
+Function ShowExplorerTitleFullPath {
+	Write-Output "Showing full directory path in Explorer title bar..."
+	If (!(Test-Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\CabinetState")) {
+		New-Item -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\CabinetState" -Force | Out-Null
+	}
+	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\CabinetState" -Name "FullPath" -Type DWord -Value 1
+}
+
+# Hide full directory path in Explorer title bar, only directory name will be shown
+Function HideExplorerTitleFullPath {
+	Write-Output "Hiding full directory path in Explorer title bar..."
+	Remove-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\CabinetState" -Name "FullPath" -ErrorAction SilentlyContinue
+}
 
 # Show known file extensions
 Function ShowKnownExtensions {
@@ -1833,16 +2502,79 @@ Function HideHiddenFiles {
 	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "Hidden" -Type DWord -Value 2
 }
 
-# Enable navigation pane expanding to current folder
+# Show protected operating system files
+Function ShowSuperHiddenFiles {
+	Write-Output "Showing protected operating system files..."
+	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "ShowSuperHidden" -Type DWord -Value 1
+}
+
+# Hide protected operating system files
+Function HideSuperHiddenFiles {
+	Write-Output "Hiding protected operating system files..."
+	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "ShowSuperHidden" -Type DWord -Value 0
+}
+
+# Show empty drives (with no media)
+Function ShowEmptyDrives {
+	Write-Output "Showing empty drives (with no media)..."
+	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "HideDrivesWithNoMedia" -Type DWord -Value 0
+}
+
+# Hide empty drives (with no media)
+Function HideEmptyDrives {
+	Write-Output "Hiding empty drives (with no media)..."
+	Remove-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "HideDrivesWithNoMedia" -ErrorAction SilentlyContinue
+}
+
+# Show folder merge conflicts
+Function ShowFolderMergeConflicts {
+	Write-Output "Showing folder merge conflicts..."
+	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "HideMergeConflicts" -Type DWord -Value 0
+}
+
+# Hide folder merge conflicts
+Function HideFolderMergeConflicts {
+	Write-Output "Hiding folder merge conflicts..."
+	Remove-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "HideMergeConflicts" -ErrorAction SilentlyContinue
+}
+
+# Enable Explorer navigation pane expanding to current folder
 Function EnableNavPaneExpand {
 	Write-Output "Enabling navigation pane expanding to current folder..."
 	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "NavPaneExpandToCurrentFolder" -Type DWord -Value 1
 }
 
-# Disable navigation pane expanding to current folder
+# Disable Explorer navigation pane expanding to current folder
 Function DisableNavPaneExpand {
 	Write-Output "Disabling navigation pane expanding to current folder..."
 	Remove-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "NavPaneExpandToCurrentFolder" -ErrorAction SilentlyContinue
+}
+
+# Show all folders in Explorer navigation pane
+Function ShowNavPaneAllFolders {
+	Write-Output "Showing all folders in Explorer navigation pane..."
+	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "NavPaneShowAllFolders" -Type DWord -Value 1
+}
+
+# Hide all folders from Explorer navigation pane except the basic ones (Quick access, OneDrive, This PC, Network), some of which can be disabled using other tweaks
+Function HideNavPaneAllFolders {
+	Write-Output "Hiding all folders in Explorer navigation pane (except the basic ones)..."
+	Remove-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "NavPaneShowAllFolders" -ErrorAction SilentlyContinue
+}
+
+# Show Libraries in Explorer navigation pane
+Function ShowNavPaneLibraries {
+	Write-Output "Showing Libraries icon in Explorer namespace..."
+	If (!(Test-Path "HKCU:\Software\Classes\CLSID\{031E4825-7B94-4dc3-B131-E946B44C8DD5}")) {
+		New-Item -Path "HKCU:\Software\Classes\CLSID\{031E4825-7B94-4dc3-B131-E946B44C8DD5}" -Force | Out-Null
+	}
+	Set-ItemProperty -Path "HKCU:\Software\Classes\CLSID\{031E4825-7B94-4dc3-B131-E946B44C8DD5}" -Name "System.IsPinnedToNameSpaceTree" -Type DWord -Value 1
+}
+
+# Hide Libraries from Explorer navigation pane
+Function HideNavPaneLibraries {
+	Write-Output "Hiding Libraries icon from Explorer namespace..."
+	Remove-ItemProperty -Path "HKCU:\Software\Classes\CLSID\{031E4825-7B94-4dc3-B131-E946B44C8DD5}" -Name "System.IsPinnedToNameSpaceTree" -ErrorAction SilentlyContinue
 }
 
 # Enable launching folder windows in a separate process
@@ -1867,6 +2599,18 @@ Function EnableRestoreFldrWindows {
 Function DisableRestoreFldrWindows {
 	Write-Output "Disabling restoring previous folder windows at logon..."
 	Remove-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "PersistBrowsers" -ErrorAction SilentlyContinue
+}
+
+# Show coloring of encrypted or compressed NTFS files (green for encrypted, blue for compressed)
+Function ShowEncCompFilesColor {
+	Write-Output "Showing coloring of encrypted or compressed NTFS files..."
+	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "ShowEncryptCompressedColor" -Type DWord -Value 1
+}
+
+# Hide coloring of encrypted or compressed NTFS files
+Function HideEncCompFilesColor {
+	Write-Output "Hiding coloring of encrypted or compressed NTFS files..."
+	Remove-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "ShowEncryptCompressedColor" -ErrorAction SilentlyContinue
 }
 
 # Disable Sharing Wizard
@@ -1944,6 +2688,26 @@ Function ShowQuickAccess {
 	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer" -Name "HubMode" -ErrorAction SilentlyContinue
 }
 
+# Hide Recycle Bin shortcut from desktop
+Function HideRecycleBinFromDesktop {
+	Write-Output "Hiding Recycle Bin shortcut from desktop..."
+	If (!(Test-Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\ClassicStartMenu")) {
+		New-Item -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\ClassicStartMenu" -Force | Out-Null
+	}
+	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\ClassicStartMenu" -Name "{645FF040-5081-101B-9F08-00AA002F954E}" -Type DWord -Value 1
+	If (!(Test-Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel")) {
+		New-Item -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel" -Force | Out-Null
+	}
+	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel" -Name "{645FF040-5081-101B-9F08-00AA002F954E}" -Type DWord -Value 1
+}
+
+# Show Recycle Bin shortcut on desktop
+Function ShowRecycleBinOnDesktop {
+	Write-Output "Showing Recycle Bin shortcut on desktop..."
+	Remove-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\ClassicStartMenu" -Name "{645FF040-5081-101B-9F08-00AA002F954E}" -ErrorAction SilentlyContinue
+	Remove-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel" -Name "{645FF040-5081-101B-9F08-00AA002F954E}" -ErrorAction SilentlyContinue
+}
+
 # Show This PC shortcut on desktop
 Function ShowThisPCOnDesktop {
 	Write-Output "Showing This PC shortcut on desktop..."
@@ -1964,6 +2728,26 @@ Function HideThisPCFromDesktop {
 	Remove-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel" -Name "{20D04FE0-3AEA-1069-A2D8-08002B30309D}" -ErrorAction SilentlyContinue
 }
 
+# Show User Folder shortcut on desktop
+Function ShowUserFolderOnDesktop {
+	Write-Output "Showing User Folder shortcut on desktop..."
+	If (!(Test-Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\ClassicStartMenu")) {
+		New-Item -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\ClassicStartMenu" -Force | Out-Null
+	}
+	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\ClassicStartMenu" -Name "{59031a47-3f72-44a7-89c5-5595fe6b30ee}" -Type DWord -Value 0
+	If (!(Test-Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel")) {
+		New-Item -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel" -Force | Out-Null
+	}
+	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel" -Name "{59031a47-3f72-44a7-89c5-5595fe6b30ee}" -Type DWord -Value 0
+}
+
+# Hide User Folder shortcut from desktop
+Function HideUserFolderFromDesktop {
+	Write-Output "Hiding User Folder shortcut from desktop..."
+	Remove-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\ClassicStartMenu" -Name "{59031a47-3f72-44a7-89c5-5595fe6b30ee}" -ErrorAction SilentlyContinue
+	Remove-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel" -Name "{59031a47-3f72-44a7-89c5-5595fe6b30ee}" -ErrorAction SilentlyContinue
+}
+
 # Show Control panel shortcut on desktop
 Function ShowControlPanelOnDesktop {
 	Write-Output "Showing Control panel shortcut on desktop..."
@@ -1977,19 +2761,6 @@ Function ShowControlPanelOnDesktop {
 	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel" -Name "{5399E694-6CE5-4D6C-8FCE-1D8870FDCBA0}" -Type DWord -Value 0
 }
 
-# Hide User Folder shortcut from desktop
-Function HideUserFolderFromDesktop {
-	Write-Output "Hiding User Folder shortcut from desktop..."
-	Remove-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\ClassicStartMenu" -Name "{59031a47-3f72-44a7-89c5-5595fe6b30ee}" -ErrorAction SilentlyContinue
-	Remove-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel" -Name "{59031a47-3f72-44a7-89c5-5595fe6b30ee}" -ErrorAction SilentlyContinue
-}
-
-# Hide Desktop icon from This PC - The icon remains in personal folders and open/save dialogs
-Function HideDesktopFromThisPC {
-	Write-Output "Hiding Desktop icon from This PC..."
-	Remove-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{B4BFCC3A-DB2C-424C-B029-7FE99A87C641}" -Recurse -ErrorAction SilentlyContinue
-}
-
 # Hide Control panel shortcut from desktop
 Function HideControlPanelFromDesktop {
 	Write-Output "Hiding Control panel shortcut from desktop..."
@@ -1997,17 +2768,54 @@ Function HideControlPanelFromDesktop {
 	Remove-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel" -Name "{5399E694-6CE5-4D6C-8FCE-1D8870FDCBA0}" -ErrorAction SilentlyContinue
 }
 
-# Show User Folder shortcut on desktop
-Function ShowUserFolderOnDesktop {
-	Write-Output "Showing User Folder shortcut on desktop..."
-	If (!(Test-Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\ClassicStartMenu")) {
-		New-Item -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\ClassicStartMenu" -Force | Out-Null
+# Show Network shortcut on desktop
+Function ShowNetworkOnDesktop {
+	Write-Output "Showing Network shortcut on desktop..."
+	If (!(Test-Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\ClassicStartMenu" )) {
+		New-Item -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\ClassicStartMenu"  -Force | Out-Null
 	}
-	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\ClassicStartMenu" -Name "{59031a47-3f72-44a7-89c5-5595fe6b30ee}" -Type DWord -Value 0
-	If (!(Test-Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel")) {
+	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\ClassicStartMenu" -Name "{F02C1A0D-BE21-4350-88B0-7367FC96EF3C}" -Type DWord -Value 0
+	If (!(Test-Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel" )) {
 		New-Item -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel" -Force | Out-Null
 	}
-	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel" -Name "{59031a47-3f72-44a7-89c5-5595fe6b30ee}" -Type DWord -Value 0
+	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel" -Name "{F02C1A0D-BE21-4350-88B0-7367FC96EF3C}" -Type DWord -Value 0
+}
+
+# Hide Network shortcut from desktop
+Function HideNetworkFromDesktop {
+	Write-Output "Hiding Network shortcut from desktop..."
+	Remove-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\ClassicStartMenu" -Name "{F02C1A0D-BE21-4350-88B0-7367FC96EF3C}" -ErrorAction SilentlyContinue
+	Remove-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel" -Name "{F02C1A0D-BE21-4350-88B0-7367FC96EF3C}" -ErrorAction SilentlyContinue
+}
+
+# Hide all icons from desktop
+Function HideDesktopIcons {
+	Write-Output "Hiding all icons from desktop..."
+	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "HideIcons" -Value 1
+}
+
+# Show all icons on desktop
+Function ShowDesktopIcons {
+	Write-Output "Showing all icons on desktop..."
+	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "HideIcons" -Value 0
+}
+
+# Show Windows build number and Windows edition (Home/Pro/Enterprise) from bottom right of desktop
+Function ShowBuildNumberOnDesktop {
+	Write-Output "Showing Windows build number on desktop..."
+	Set-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name "PaintDesktopVersion" -Type DWord -Value 1
+}
+
+# Remove Windows build number and Windows edition (Home/Pro/Enterprise) from bottom right of desktop
+Function HideBuildNumberFromDesktop {
+	Write-Output "Hiding Windows build number from desktop..."
+	Set-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name "PaintDesktopVersion" -Type DWord -Value 0
+}
+
+# Hide Desktop icon from This PC - The icon remains in personal folders and open/save dialogs
+Function HideDesktopFromThisPC {
+	Write-Output "Hiding Desktop icon from This PC..."
+	Remove-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{B4BFCC3A-DB2C-424C-B029-7FE99A87C641}" -Recurse -ErrorAction SilentlyContinue
 }
 
 # Show Desktop icon in This PC
@@ -2226,6 +3034,18 @@ Function Show3DObjectsInExplorer {
 	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Explorer\FolderDescriptions\{31C0DD25-9439-4F12-BF41-7FF4EDA38722}\PropertyBag" -Name "ThisPCPolicy" -ErrorAction SilentlyContinue
 }
 
+# Hide Network icon from Explorer namespace - Hides the icon also from personal folders and open/save dialogs
+Function HideNetworkFromExplorer {
+	Write-Output "Hiding Network icon from Explorer namespace..."
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\NonEnum" -Name "{F02C1A0D-BE21-4350-88B0-7367FC96EF3C}" -Type DWord -Value 1
+}
+
+# Show Network icon in Explorer namespace
+Function ShowNetworkInExplorer {
+	Write-Output "Showing Network icon in Explorer namespace..."
+	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\NonEnum" -Name "{F02C1A0D-BE21-4350-88B0-7367FC96EF3C}" -ErrorAction SilentlyContinue
+}
+
 # Hide 'Include in library' context menu item
 Function HideIncludeInLibraryMenu {
 	Write-Output "Hiding 'Include in library' context menu item..."
@@ -2367,12 +3187,14 @@ Function UninstallOneDrive {
 	Start-Sleep -s 2
 	Stop-Process -Name "explorer" -Force -ErrorAction SilentlyContinue
 	Start-Sleep -s 2
-	Remove-Item -Path "$env:USERPROFILE\OneDrive" -Force -Recurse -ErrorAction SilentlyContinue
+	If ((Get-ChildItem -Path "$env:USERPROFILE\OneDrive" -ErrorAction SilentlyContinue | Measure-Object).Count -eq 0) {
+		Remove-Item -Path "$env:USERPROFILE\OneDrive" -Force -Recurse -ErrorAction SilentlyContinue
+	}
 	Remove-Item -Path "$env:LOCALAPPDATA\Microsoft\OneDrive" -Force -Recurse -ErrorAction SilentlyContinue
 	Remove-Item -Path "$env:PROGRAMDATA\Microsoft OneDrive" -Force -Recurse -ErrorAction SilentlyContinue
 	Remove-Item -Path "$env:SYSTEMDRIVE\OneDriveTemp" -Force -Recurse -ErrorAction SilentlyContinue
 	If (!(Test-Path "HKCR:")) {
-		New-PSDrive -Name HKCR -PSProvider Registry -Root HKEY_CLASSES_ROOT | Out-Null
+		New-PSDrive -Name "HKCR" -PSProvider "Registry" -Root "HKEY_CLASSES_ROOT" | Out-Null
 	}
 	Remove-Item -Path "HKCR:\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}" -Recurse -ErrorAction SilentlyContinue
 	Remove-Item -Path "HKCR:\Wow6432Node\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}" -Recurse -ErrorAction SilentlyContinue
@@ -2394,14 +3216,21 @@ Function UninstallMsftBloat {
 	Get-AppxPackage "Microsoft.3DBuilder" | Remove-AppxPackage
 	Get-AppxPackage "Microsoft.AppConnector" | Remove-AppxPackage
 	Get-AppxPackage "Microsoft.BingFinance" | Remove-AppxPackage
+	Get-AppxPackage "Microsoft.BingFoodAndDrink" | Remove-AppxPackage
+	Get-AppxPackage "Microsoft.BingHealthAndFitness" | Remove-AppxPackage
+	Get-AppxPackage "Microsoft.BingMaps" | Remove-AppxPackage
 	Get-AppxPackage "Microsoft.BingNews" | Remove-AppxPackage
 	Get-AppxPackage "Microsoft.BingSports" | Remove-AppxPackage
 	Get-AppxPackage "Microsoft.BingTranslator" | Remove-AppxPackage
+	Get-AppxPackage "Microsoft.BingTravel" | Remove-AppxPackage
 	Get-AppxPackage "Microsoft.BingWeather" | Remove-AppxPackage
 	Get-AppxPackage "Microsoft.CommsPhone" | Remove-AppxPackage
 	Get-AppxPackage "Microsoft.ConnectivityStore" | Remove-AppxPackage
+	Get-AppxPackage "Microsoft.FreshPaint" | Remove-AppxPackage
 	Get-AppxPackage "Microsoft.GetHelp" | Remove-AppxPackage
 	Get-AppxPackage "Microsoft.Getstarted" | Remove-AppxPackage
+	Get-AppxPackage "Microsoft.HelpAndTips" | Remove-AppxPackage
+	Get-AppxPackage "Microsoft.Media.PlayReadyClient.2" | Remove-AppxPackage
 	Get-AppxPackage "Microsoft.Messaging" | Remove-AppxPackage
 	Get-AppxPackage "Microsoft.Microsoft3DViewer" | Remove-AppxPackage
 	Get-AppxPackage "Microsoft.MicrosoftOfficeHub" | Remove-AppxPackage
@@ -2409,18 +3238,22 @@ Function UninstallMsftBloat {
 	Get-AppxPackage "Microsoft.MicrosoftSolitaireCollection" | Remove-AppxPackage
 	Get-AppxPackage "Microsoft.MicrosoftStickyNotes" | Remove-AppxPackage
 	Get-AppxPackage "Microsoft.MinecraftUWP" | Remove-AppxPackage
+	Get-AppxPackage "Microsoft.MixedReality.Portal" | Remove-AppxPackage
+	Get-AppxPackage "Microsoft.MoCamera" | Remove-AppxPackage
 	Get-AppxPackage "Microsoft.MSPaint" | Remove-AppxPackage
 	Get-AppxPackage "Microsoft.NetworkSpeedTest" | Remove-AppxPackage
+	Get-AppxPackage "Microsoft.OfficeLens" | Remove-AppxPackage
 	Get-AppxPackage "Microsoft.Office.OneNote" | Remove-AppxPackage
 	Get-AppxPackage "Microsoft.Office.Sway" | Remove-AppxPackage
-	Get-AppxPackage "Microsoft.OfficeLens" | Remove-AppxPackage
 	Get-AppxPackage "Microsoft.OneConnect" | Remove-AppxPackage
 	Get-AppxPackage "Microsoft.People" | Remove-AppxPackage
 	Get-AppxPackage "Microsoft.Print3D" | Remove-AppxPackage
+	Get-AppxPackage "Microsoft.Reader" | Remove-AppxPackage
 	Get-AppxPackage "Microsoft.RemoteDesktop" | Remove-AppxPackage
 	Get-AppxPackage "Microsoft.SkypeApp" | Remove-AppxPackage
 	Get-AppxPackage "Microsoft.Todos" | Remove-AppxPackage
 	Get-AppxPackage "Microsoft.Wallet" | Remove-AppxPackage
+	Get-AppxPackage "Microsoft.WebMediaExtensions" | Remove-AppxPackage
 	Get-AppxPackage "Microsoft.Whiteboard" | Remove-AppxPackage
 	Get-AppxPackage "Microsoft.WindowsAlarms" | Remove-AppxPackage
 	Get-AppxPackage "Microsoft.WindowsCamera" | Remove-AppxPackage
@@ -2429,28 +3262,39 @@ Function UninstallMsftBloat {
 	Get-AppxPackage "Microsoft.WindowsMaps" | Remove-AppxPackage
 	Get-AppxPackage "Microsoft.WindowsPhone" | Remove-AppxPackage
 	Get-AppxPackage "Microsoft.Windows.Photos" | Remove-AppxPackage
+	Get-AppxPackage "Microsoft.WindowsReadingList" | Remove-AppxPackage
+	Get-AppxPackage "Microsoft.WindowsScan" | Remove-AppxPackage
 	Get-AppxPackage "Microsoft.WindowsSoundRecorder" | Remove-AppxPackage
+	Get-AppxPackage "Microsoft.WinJS.1.0" | Remove-AppxPackage
+	Get-AppxPackage "Microsoft.WinJS.2.0" | Remove-AppxPackage
+	Get-AppxPackage "Microsoft.YourPhone" | Remove-AppxPackage
 	Get-AppxPackage "Microsoft.ZuneMusic" | Remove-AppxPackage
 	Get-AppxPackage "Microsoft.ZuneVideo" | Remove-AppxPackage
-	Get-AppxPackage "Microsoft.WebMediaExtensions" | Remove-AppxPackage
-	Get-AppxPackage "Microsoft.MixedReality.Portal" | Remove-AppxPackage
-	Get-AppxPackage "Microsoft.YourPhone" | Remove-AppxPackage
+	Get-AppxPackage "Microsoft.Advertising.Xaml" | Remove-AppxPackage # Dependency for microsoft.windowscommunicationsapps, Microsoft.BingWeather
 }
 
 # Install default Microsoft applications
 Function InstallMsftBloat {
 	Write-Output "Installing default Microsoft applications..."
 	Get-AppxPackage -AllUsers "Microsoft.3DBuilder" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
+	Get-AppxPackage -AllUsers "Microsoft.Advertising.Xaml" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"} # Dependency for microsoft.windowscommunicationsapps, Microsoft.BingWeather
 	Get-AppxPackage -AllUsers "Microsoft.AppConnector" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "Microsoft.BingFinance" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
+	Get-AppxPackage -AllUsers "Microsoft.BingFoodAndDrink" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
+	Get-AppxPackage -AllUsers "Microsoft.BingHealthAndFitness" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
+	Get-AppxPackage -AllUsers "Microsoft.BingMaps" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "Microsoft.BingNews" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "Microsoft.BingSports" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "Microsoft.BingTranslator" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
+	Get-AppxPackage -AllUsers "Microsoft.BingTravel" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "Microsoft.BingWeather" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "Microsoft.CommsPhone" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "Microsoft.ConnectivityStore" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
+	Get-AppxPackage -AllUsers "Microsoft.FreshPaint" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "Microsoft.GetHelp" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "Microsoft.Getstarted" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
+	Get-AppxPackage -AllUsers "Microsoft.HelpAndTips" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
+	Get-AppxPackage -AllUsers "Microsoft.Media.PlayReadyClient.2" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "Microsoft.Messaging" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "Microsoft.Microsoft3DViewer" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "Microsoft.MicrosoftOfficeHub" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
@@ -2458,18 +3302,22 @@ Function InstallMsftBloat {
 	Get-AppxPackage -AllUsers "Microsoft.MicrosoftSolitaireCollection" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "Microsoft.MicrosoftStickyNotes" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "Microsoft.MinecraftUWP" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
+	Get-AppxPackage -AllUsers "Microsoft.MixedReality.Portal" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
+	Get-AppxPackage -AllUsers "Microsoft.MoCamera" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "Microsoft.MSPaint" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "Microsoft.NetworkSpeedTest" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
+	Get-AppxPackage -AllUsers "Microsoft.OfficeLens" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "Microsoft.Office.OneNote" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "Microsoft.Office.Sway" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
-	Get-AppxPackage -AllUsers "Microsoft.OfficeLens" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "Microsoft.OneConnect" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "Microsoft.People" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "Microsoft.Print3D" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
+	Get-AppxPackage -AllUsers "Microsoft.Reader" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "Microsoft.RemoteDesktop" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "Microsoft.SkypeApp" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "Microsoft.Todos" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "Microsoft.Wallet" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
+	Get-AppxPackage -AllUsers "Microsoft.WebMediaExtensions" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "Microsoft.Whiteboard" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "Microsoft.WindowsAlarms" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "Microsoft.WindowsCamera" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
@@ -2478,12 +3326,14 @@ Function InstallMsftBloat {
 	Get-AppxPackage -AllUsers "Microsoft.WindowsMaps" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "Microsoft.WindowsPhone" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "Microsoft.Windows.Photos" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
+	Get-AppxPackage -AllUsers "Microsoft.WindowsReadingList" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
+	Get-AppxPackage -AllUsers "Microsoft.WindowsScan" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "Microsoft.WindowsSoundRecorder" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
+	Get-AppxPackage -AllUsers "Microsoft.WinJS.1.0" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
+	Get-AppxPackage -AllUsers "Microsoft.WinJS.2.0" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
+	Get-AppxPackage -AllUsers "Microsoft.YourPhone" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "Microsoft.ZuneMusic" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "Microsoft.ZuneVideo" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
-	Get-AppxPackage -AllUsers "Microsoft.WebMediaExtensions" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
-	Get-AppxPackage -AllUsers "Microsoft.MixedReality.Portal" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
-	Get-AppxPackage -AllUsers "Microsoft.YourPhone" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 }
 # In case you have removed them for good, you can try to restore the files using installation medium as follows
 # New-Item C:\Mnt -Type Directory | Out-Null
@@ -2505,9 +3355,12 @@ function UninstallThirdPartyBloat {
 	Get-AppxPackage "89006A2E.AutodeskSketchBook" | Remove-AppxPackage
 	Get-AppxPackage "9E2F88E3.Twitter" | Remove-AppxPackage
 	Get-AppxPackage "A278AB0D.DisneyMagicKingdoms" | Remove-AppxPackage
+	Get-AppxPackage "A278AB0D.DragonManiaLegends" | Remove-AppxPackage
 	Get-AppxPackage "A278AB0D.MarchofEmpires" | Remove-AppxPackage
 	Get-AppxPackage "ActiproSoftwareLLC.562882FEEB491" | Remove-AppxPackage
+	Get-AppxPackage "AD2F1837.GettingStartedwithWindows8" | Remove-AppxPackage
 	Get-AppxPackage "AD2F1837.HPJumpStart" | Remove-AppxPackage
+	Get-AppxPackage "AD2F1837.HPRegistration" | Remove-AppxPackage
 	Get-AppxPackage "AdobeSystemsIncorporated.AdobePhotoshopExpress" | Remove-AppxPackage
 	Get-AppxPackage "Amazon.com.Amazon" | Remove-AppxPackage
 	Get-AppxPackage "C27EB4BA.DropboxOEM" | Remove-AppxPackage
@@ -2518,24 +3371,23 @@ function UninstallThirdPartyBloat {
 	Get-AppxPackage "DB6EA5DB.CyberLinkMediaSuiteEssentials" | Remove-AppxPackage
 	Get-AppxPackage "DolbyLaboratories.DolbyAccess" | Remove-AppxPackage
 	Get-AppxPackage "Drawboard.DrawboardPDF" | Remove-AppxPackage
-	Get-AppxPackage "E046963F.LenovoCompanion" | Remove-AppxPackage
 	Get-AppxPackage "Facebook.Facebook" | Remove-AppxPackage
 	Get-AppxPackage "Fitbit.FitbitCoach" | Remove-AppxPackage
 	Get-AppxPackage "flaregamesGmbH.RoyalRevolt2" | Remove-AppxPackage
 	Get-AppxPackage "GAMELOFTSA.Asphalt8Airborne" | Remove-AppxPackage
 	Get-AppxPackage "KeeperSecurityInc.Keeper" | Remove-AppxPackage
 	Get-AppxPackage "king.com.BubbleWitch3Saga" | Remove-AppxPackage
+	Get-AppxPackage "king.com.CandyCrushFriends" | Remove-AppxPackage
+	Get-AppxPackage "king.com.CandyCrushSaga" | Remove-AppxPackage
 	Get-AppxPackage "king.com.CandyCrushSodaSaga" | Remove-AppxPackage
-	Get-AppxPackage "LenovoCorporation.LenovoID" | Remove-AppxPackage
-	Get-AppxPackage "LenovoCorporation.LenovoSettings" | Remove-AppxPackage
+	Get-AppxPackage "king.com.FarmHeroesSaga" | Remove-AppxPackage
+	Get-AppxPackage "Nordcurrent.CookingFever" | Remove-AppxPackage
 	Get-AppxPackage "PandoraMediaInc.29680B314EFC2" | Remove-AppxPackage
 	Get-AppxPackage "PricelinePartnerNetwork.Booking.comBigsavingsonhot" | Remove-AppxPackage
 	Get-AppxPackage "SpotifyAB.SpotifyMusic" | Remove-AppxPackage
+	Get-AppxPackage "ThumbmunkeysLtd.PhototasticCollage" | Remove-AppxPackage
 	Get-AppxPackage "WinZipComputing.WinZipUniversal" | Remove-AppxPackage
 	Get-AppxPackage "XINGAG.XING" | Remove-AppxPackage
-	Get-AppxPackage "king.com.CandyCrushSaga" | Remove-AppxPackage
-	Get-AppxPackage "Nordcurrent.CookingFever" | Remove-AppxPackage
-	Get-AppxPackage "A278AB0D.DragonManiaLegends" | Remove-AppxPackage
 }
 
 # Install default third party applications
@@ -2551,9 +3403,12 @@ Function InstallThirdPartyBloat {
 	Get-AppxPackage -AllUsers "89006A2E.AutodeskSketchBook" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "9E2F88E3.Twitter" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "A278AB0D.DisneyMagicKingdoms" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
+	Get-AppxPackage -AllUsers "A278AB0D.DragonManiaLegends" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "A278AB0D.MarchofEmpires" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "ActiproSoftwareLLC.562882FEEB491" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
+	Get-AppxPackage -AllUsers "AD2F1837.GettingStartedwithWindows8" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "AD2F1837.HPJumpStart" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
+	Get-AppxPackage -AllUsers "AD2F1837.HPRegistration" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "AdobeSystemsIncorporated.AdobePhotoshopExpress" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "Amazon.com.Amazon" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "C27EB4BA.DropboxOEM" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
@@ -2564,30 +3419,31 @@ Function InstallThirdPartyBloat {
 	Get-AppxPackage -AllUsers "DB6EA5DB.CyberLinkMediaSuiteEssentials" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "DolbyLaboratories.DolbyAccess" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "Drawboard.DrawboardPDF" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
-	Get-AppxPackage -AllUsers "E046963F.LenovoCompanion" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "Facebook.Facebook" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "Fitbit.FitbitCoach" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "flaregamesGmbH.RoyalRevolt2" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "GAMELOFTSA.Asphalt8Airborne" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "KeeperSecurityInc.Keeper" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "king.com.BubbleWitch3Saga" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
+	Get-AppxPackage -AllUsers "king.com.CandyCrushFriends" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
+	Get-AppxPackage -AllUsers "king.com.CandyCrushSaga" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "king.com.CandyCrushSodaSaga" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
-	Get-AppxPackage -AllUsers "LenovoCorporation.LenovoID" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
-	Get-AppxPackage -AllUsers "LenovoCorporation.LenovoSettings" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
+	Get-AppxPackage -AllUsers "king.com.FarmHeroesSaga" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
+	Get-AppxPackage -AllUsers "Nordcurrent.CookingFever" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "PandoraMediaInc.29680B314EFC2" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "PricelinePartnerNetwork.Booking.comBigsavingsonhot" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "SpotifyAB.SpotifyMusic" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
+	Get-AppxPackage -AllUsers "ThumbmunkeysLtd.PhototasticCollage" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "WinZipComputing.WinZipUniversal" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "XINGAG.XING" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
-	Get-AppxPackage -AllUsers "king.com.CandyCrushSaga" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
-	Get-AppxPackage -AllUsers "Nordcurrent.CookingFever" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
-	Get-AppxPackage -AllUsers "A278AB0D.DragonManiaLegends" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 }
 
 # Uninstall Windows Store
 Function UninstallWindowsStore {
 	Write-Output "Uninstalling Windows Store..."
 	Get-AppxPackage "Microsoft.DesktopAppInstaller" | Remove-AppxPackage
+	Get-AppxPackage "Microsoft.Services.Store.Engagement" | Remove-AppxPackage
+	Get-AppxPackage "Microsoft.StorePurchaseApp" | Remove-AppxPackage
 	Get-AppxPackage "Microsoft.WindowsStore" | Remove-AppxPackage
 }
 
@@ -2595,6 +3451,8 @@ Function UninstallWindowsStore {
 Function InstallWindowsStore {
 	Write-Output "Installing Windows Store..."
 	Get-AppxPackage -AllUsers "Microsoft.DesktopAppInstaller" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
+	Get-AppxPackage -AllUsers "Microsoft.Services.Store.Engagement" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
+	Get-AppxPackage -AllUsers "Microsoft.StorePurchaseApp" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "Microsoft.WindowsStore" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 }
 
@@ -2627,6 +3485,24 @@ Function EnableXboxFeatures {
 	Remove-ItemProperty -Path "HKCU:\Software\Microsoft\GameBar" -Name "AutoGameModeEnabled" -ErrorAction SilentlyContinue
 	Set-ItemProperty -Path "HKCU:\System\GameConfigStore" -Name "GameDVR_Enabled" -Type DWord -Value 1
 	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\GameDVR" -Name "AllowGameDVR" -ErrorAction SilentlyContinue
+}
+
+# Disable Fullscreen optimizations
+Function DisableFullscreenOptims {
+	Write-Output "Disabling Fullscreen optimizations..."
+	Set-ItemProperty -Path "HKCU:\System\GameConfigStore" -Name "GameDVR_DXGIHonorFSEWindowsCompatible" -Type DWord -Value 1
+	Set-ItemProperty -Path "HKCU:\System\GameConfigStore" -Name "GameDVR_FSEBehavior" -Type DWord -Value 2
+	Set-ItemProperty -Path "HKCU:\System\GameConfigStore" -Name "GameDVR_FSEBehaviorMode" -Type DWord -Value 2
+	Set-ItemProperty -Path "HKCU:\System\GameConfigStore" -Name "GameDVR_HonorUserFSEBehaviorMode" -Type DWord -Value 1
+}
+
+# Enable Fullscreen optimizations
+Function EnableFullscreenOptims {
+	Write-Output "Enabling Fullscreen optimizations..."
+	Set-ItemProperty -Path "HKCU:\System\GameConfigStore" -Name "GameDVR_DXGIHonorFSEWindowsCompatible" -Type DWord -Value 0
+	Remove-ItemProperty -Path "HKCU:\System\GameConfigStore" -Name "GameDVR_FSEBehavior" -ErrorAction SilentlyContinue
+	Set-ItemProperty -Path "HKCU:\System\GameConfigStore" -Name "GameDVR_FSEBehaviorMode" -Type DWord -Value 0
+	Set-ItemProperty -Path "HKCU:\System\GameConfigStore" -Name "GameDVR_HonorUserFSEBehaviorMode" -Type DWord -Value 0
 }
 
 # Disable built-in Adobe Flash in IE and Edge
@@ -2696,49 +3572,142 @@ Function EnableIEFirstRun {
 	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Internet Explorer\Main" -Name "DisableFirstRunCustomize" -ErrorAction SilentlyContinue
 }
 
+# Disable "Hi!" First Logon Animation (it will be replaced by "Preparing Windows" message)
+Function DisableFirstLogonAnimation {
+	Write-Output "Disabling First Logon Animation..."
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Name "EnableFirstLogonAnimation" -Type DWord -Value 0
+}
+
+# Enable "Hi!" First Logon Animation
+Function EnableFirstLogonAnimation {
+	Write-Output "Enabling First Logon Animation..."
+	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Name "EnableFirstLogonAnimation" -ErrorAction SilentlyContinue
+}
+
+# Disable Windows Media Player's media sharing feature
+Function DisableMediaSharing {
+	Write-Output "Disabling Windows Media Player media sharing..."
+	If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\WindowsMediaPlayer")) {
+		New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\WindowsMediaPlayer" -Force | Out-Null
+	}
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\WindowsMediaPlayer" -Name "PreventLibrarySharing" -Type DWord -Value 1
+}
+
+# Enable Windows Media Player's media sharing feature
+Function EnableMediaSharing {
+	Write-Output "Enabling Windows Media Player media sharing..."
+	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\WindowsMediaPlayer" -Name "PreventLibrarySharing" -ErrorAction SilentlyContinue
+}
+
+# Disable Windows Media Player online access - audio file metadata download, radio presets, DRM.
+Function DisableMediaOnlineAccess {
+	Write-Output "Disabling Windows Media Player online access..."
+	If (!(Test-Path "HKCU:\SOFTWARE\Policies\Microsoft\WindowsMediaPlayer")) {
+		New-Item -Path "HKCU:\SOFTWARE\Policies\Microsoft\WindowsMediaPlayer" -Force | Out-Null
+	}
+	Set-ItemProperty -Path "HKCU:\SOFTWARE\Policies\Microsoft\WindowsMediaPlayer" -Name "PreventCDDVDMetadataRetrieval" -Type DWord -Value 1
+	Set-ItemProperty -Path "HKCU:\SOFTWARE\Policies\Microsoft\WindowsMediaPlayer" -Name "PreventMusicFileMetadataRetrieval" -Type DWord -Value 1
+	Set-ItemProperty -Path "HKCU:\SOFTWARE\Policies\Microsoft\WindowsMediaPlayer" -Name "PreventRadioPresetsRetrieval" -Type DWord -Value 1
+	If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\WMDRM")) {
+		New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\WMDRM" -Force | Out-Null
+	}
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\WMDRM" -Name "DisableOnline" -Type DWord -Value 1
+}
+
+# Enable Windows Media Player online access
+Function EnableMediaOnlineAccess {
+	Write-Output "Enabling Windows Media Player online access..."
+	Remove-ItemProperty -Path "HKCU:\SOFTWARE\Policies\Microsoft\WindowsMediaPlayer" -Name "PreventCDDVDMetadataRetrieval" -ErrorAction SilentlyContinue
+	Remove-ItemProperty -Path "HKCU:\SOFTWARE\Policies\Microsoft\WindowsMediaPlayer" -Name "PreventMusicFileMetadataRetrieval" -ErrorAction SilentlyContinue
+	Remove-ItemProperty -Path "HKCU:\SOFTWARE\Policies\Microsoft\WindowsMediaPlayer" -Name "PreventRadioPresetsRetrieval" -ErrorAction SilentlyContinue
+	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\WMDRM" -Name "DisableOnline" -ErrorAction SilentlyContinue
+}
+
+# Enable Developer Mode
+Function EnableDeveloperMode {
+	Write-Output "Enabling Developer Mode..."
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock" -Name "AllowDevelopmentWithoutDevLicense" -Type DWord -Value 1
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock" -Name "AllowAllTrustedApps" -Type DWord -Value 1
+}
+
+# Disable Developer Mode
+Function DisableDeveloperMode {
+	Write-Output "Disabling Developer Mode..."
+	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock" -Name "AllowDevelopmentWithoutDevLicense" -ErrorAction SilentlyContinue
+	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock" -Name "AllowAllTrustedApps" -ErrorAction SilentlyContinue
+}
+
 # Uninstall Windows Media Player
 Function UninstallMediaPlayer {
 	Write-Output "Uninstalling Windows Media Player..."
-	Disable-WindowsOptionalFeature -Online -FeatureName "WindowsMediaPlayer" -NoRestart -WarningAction SilentlyContinue | Out-Null
+	Get-WindowsOptionalFeature -Online | Where-Object { $_.FeatureName -eq "WindowsMediaPlayer" } | Disable-WindowsOptionalFeature -Online -NoRestart -WarningAction SilentlyContinue | Out-Null
+	Get-WindowsCapability -Online | Where-Object { $_.Name -like "Media.WindowsMediaPlayer*" } | Remove-WindowsCapability -Online | Out-Null
 }
 
 # Install Windows Media Player
 Function InstallMediaPlayer {
 	Write-Output "Installing Windows Media Player..."
-	Enable-WindowsOptionalFeature -Online -FeatureName "WindowsMediaPlayer" -NoRestart -WarningAction SilentlyContinue | Out-Null
+	Get-WindowsOptionalFeature -Online | Where-Object { $_.FeatureName -eq "WindowsMediaPlayer" } | Enable-WindowsOptionalFeature -Online -NoRestart -WarningAction SilentlyContinue | Out-Null
+	Get-WindowsCapability -Online | Where-Object { $_.Name -like "Media.WindowsMediaPlayer*" } | Add-WindowsCapability -Online | Out-Null
 }
 
 # Uninstall Internet Explorer
 Function UninstallInternetExplorer {
 	Write-Output "Uninstalling Internet Explorer..."
-	Disable-WindowsOptionalFeature -Online -FeatureName "Internet-Explorer-Optional-$env:PROCESSOR_ARCHITECTURE" -NoRestart -WarningAction SilentlyContinue | Out-Null
+	Get-WindowsOptionalFeature -Online | Where-Object { $_.FeatureName -like "Internet-Explorer-Optional*" } | Disable-WindowsOptionalFeature -Online -NoRestart -WarningAction SilentlyContinue | Out-Null
+	Get-WindowsCapability -Online | Where-Object { $_.Name -like "Browser.InternetExplorer*" } | Remove-WindowsCapability -Online | Out-Null
 }
 
 # Install Internet Explorer
 Function InstallInternetExplorer {
 	Write-Output "Installing Internet Explorer..."
-	Enable-WindowsOptionalFeature -Online -FeatureName "Internet-Explorer-Optional-$env:PROCESSOR_ARCHITECTURE" -NoRestart -WarningAction SilentlyContinue | Out-Null
+	Get-WindowsOptionalFeature -Online | Where-Object { $_.FeatureName -like "Internet-Explorer-Optional*" } | Enable-WindowsOptionalFeature -Online -NoRestart -WarningAction SilentlyContinue | Out-Null
+	Get-WindowsCapability -Online | Where-Object { $_.Name -like "Browser.InternetExplorer*" } | Add-WindowsCapability -Online | Out-Null
 }
 
 # Uninstall Work Folders Client - Not applicable to Server
 Function UninstallWorkFolders {
 	Write-Output "Uninstalling Work Folders Client..."
-	Disable-WindowsOptionalFeature -Online -FeatureName "WorkFolders-Client" -NoRestart -WarningAction SilentlyContinue | Out-Null
+	Get-WindowsOptionalFeature -Online | Where-Object { $_.FeatureName -eq "WorkFolders-Client" } | Disable-WindowsOptionalFeature -Online -NoRestart -WarningAction SilentlyContinue | Out-Null
 }
 
 # Install Work Folders Client - Not applicable to Server
 Function InstallWorkFolders {
 	Write-Output "Installing Work Folders Client..."
-	Enable-WindowsOptionalFeature -Online -FeatureName "WorkFolders-Client" -NoRestart -WarningAction SilentlyContinue | Out-Null
+	Get-WindowsOptionalFeature -Online | Where-Object { $_.FeatureName -eq "WorkFolders-Client" } | Enable-WindowsOptionalFeature -Online -NoRestart -WarningAction SilentlyContinue | Out-Null
 }
 
-# Uninstall PowerShell 2.0 Environment.
+# Uninstall Windows Hello Face - Not applicable to Server
+Function UninstallHelloFace {
+	Write-Output "Uninstalling Windows Hello Face..."
+	Get-WindowsCapability -Online | Where-Object { $_.Name -like "Hello.Face*" } | Remove-WindowsCapability -Online | Out-Null
+}
+
+# Install Windows Hello Face - Not applicable to Server
+Function InstallHelloFace {
+	Write-Output "Installing Windows Hello Face..."
+	Get-WindowsCapability -Online | Where-Object { $_.Name -like "Hello.Face*" } | Add-WindowsCapability -Online | Out-Null
+}
+
+# Uninstall Math Recognizer - Not applicable to Server
+Function UninstallMathRecognizer {
+	Write-Output "Uninstalling Math Recognizer..."
+	Get-WindowsCapability -Online | Where-Object { $_.Name -like "MathRecognizer*" } | Remove-WindowsCapability -Online | Out-Null
+}
+
+# Install Math Recognizer - Not applicable to Server
+Function InstallMathRecognizer {
+	Write-Output "Installing Math Recognizer..."
+	Get-WindowsCapability -Online | Where-Object { $_.Name -like "MathRecognizer*" } | Add-WindowsCapability -Online | Out-Null
+}
+
+# Uninstall PowerShell 2.0 Environment
 # PowerShell 2.0 is deprecated since September 2018. This doesn't affect PowerShell 5 or newer which is the default PowerShell environment.
 # May affect Microsoft Diagnostic Tool and possibly other scripts. See https://blogs.msdn.microsoft.com/powershell/2017/08/24/windows-powershell-2-0-deprecation/
 Function UninstallPowerShellV2 {
 	Write-Output "Uninstalling PowerShell 2.0 Environment..."
 	If ((Get-CimInstance -Class "Win32_OperatingSystem").ProductType -eq 1) {
-		Disable-WindowsOptionalFeature -Online -FeatureName "MicrosoftWindowsPowerShellV2Root" -NoRestart -WarningAction SilentlyContinue | Out-Null
+		Get-WindowsOptionalFeature -Online | Where-Object { $_.FeatureName -eq "MicrosoftWindowsPowerShellV2Root" } | Disable-WindowsOptionalFeature -Online -NoRestart -WarningAction SilentlyContinue | Out-Null
 	} Else {
 		Uninstall-WindowsFeature -Name "PowerShell-V2" -WarningAction SilentlyContinue | Out-Null
 	}
@@ -2748,39 +3717,44 @@ Function UninstallPowerShellV2 {
 Function InstallPowerShellV2 {
 	Write-Output "Installing PowerShell 2.0 Environment..."
 	If ((Get-CimInstance -Class "Win32_OperatingSystem").ProductType -eq 1) {
-		Enable-WindowsOptionalFeature -Online -FeatureName "MicrosoftWindowsPowerShellV2Root" -NoRestart -WarningAction SilentlyContinue | Out-Null
+		Get-WindowsOptionalFeature -Online | Where-Object { $_.FeatureName -eq "MicrosoftWindowsPowerShellV2Root" } | Enable-WindowsOptionalFeature -Online -NoRestart -WarningAction SilentlyContinue | Out-Null
 	} Else {
 		Install-WindowsFeature -Name "PowerShell-V2" -WarningAction SilentlyContinue | Out-Null
 	}
 }
 
+# Uninstall PowerShell Integrated Scripting Environment - Applicable since 2004
+# Note: Also removes built-in graphical methods like Out-GridView
+Function UninstallPowerShellISE {
+	Write-Output "Uninstalling PowerShell Integrated Scripting Environment..."
+	Get-WindowsCapability -Online | Where-Object { $_.Name -like "Microsoft.Windows.PowerShell.ISE*" } | Remove-WindowsCapability -Online | Out-Null
+}
+
+# Install PowerShell Integrated Scripting Environment - Applicable since 2004
+Function InstallPowerShellISE {
+	Write-Output "Installing PowerShell Integrated Scripting Environment..."
+	Get-WindowsCapability -Online | Where-Object { $_.Name -like "Microsoft.Windows.PowerShell.ISE*" } | Add-WindowsCapability -Online | Out-Null
+}
+
 # Install Linux Subsystem - Applicable since Win10 1607 and Server 1709
+# Note: 1607 requires also EnableDevelopmentMode for WSL to work
 # For automated Linux distribution installation, see https://docs.microsoft.com/en-us/windows/wsl/install-on-server
 Function InstallLinuxSubsystem {
 	Write-Output "Installing Linux Subsystem..."
-	If ([System.Environment]::OSVersion.Version.Build -eq 14393) {
-		# 1607 needs developer mode to be enabled
-		Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock" -Name "AllowDevelopmentWithoutDevLicense" -Type DWord -Value 1
-		Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock" -Name "AllowAllTrustedApps" -Type DWord -Value 1
-	}
-	Enable-WindowsOptionalFeature -Online -FeatureName "Microsoft-Windows-Subsystem-Linux" -NoRestart -WarningAction SilentlyContinue | Out-Null
+	Get-WindowsOptionalFeature -Online | Where-Object { $_.FeatureName -eq "Microsoft-Windows-Subsystem-Linux" } | Enable-WindowsOptionalFeature -Online -NoRestart -WarningAction SilentlyContinue | Out-Null
 }
 
 # Uninstall Linux Subsystem - Applicable since Win10 1607 and Server 1709
 Function UninstallLinuxSubsystem {
 	Write-Output "Uninstalling Linux Subsystem..."
-	If ([System.Environment]::OSVersion.Version.Build -eq 14393) {
-		Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock" -Name "AllowDevelopmentWithoutDevLicense" -Type DWord -Value 0
-		Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock" -Name "AllowAllTrustedApps" -Type DWord -Value 0
-	}
-	Disable-WindowsOptionalFeature -Online -FeatureName "Microsoft-Windows-Subsystem-Linux" -NoRestart -WarningAction SilentlyContinue | Out-Null
+	Get-WindowsOptionalFeature -Online | Where-Object { $_.FeatureName -eq "Microsoft-Windows-Subsystem-Linux" } | Disable-WindowsOptionalFeature -Online -NoRestart -WarningAction SilentlyContinue | Out-Null
 }
 
 # Install Hyper-V - Not applicable to Home
 Function InstallHyperV {
 	Write-Output "Installing Hyper-V..."
 	If ((Get-CimInstance -Class "Win32_OperatingSystem").ProductType -eq 1) {
-		Enable-WindowsOptionalFeature -Online -FeatureName "Microsoft-Hyper-V-All" -NoRestart -WarningAction SilentlyContinue | Out-Null
+		Get-WindowsOptionalFeature -Online | Where-Object { $_.FeatureName -eq "Microsoft-Hyper-V-All" } | Enable-WindowsOptionalFeature -Online -NoRestart -WarningAction SilentlyContinue | Out-Null
 	} Else {
 		Install-WindowsFeature -Name "Hyper-V" -IncludeManagementTools -WarningAction SilentlyContinue | Out-Null
 	}
@@ -2790,9 +3764,53 @@ Function InstallHyperV {
 Function UninstallHyperV {
 	Write-Output "Uninstalling Hyper-V..."
 	If ((Get-CimInstance -Class "Win32_OperatingSystem").ProductType -eq 1) {
-		Disable-WindowsOptionalFeature -Online -FeatureName "Microsoft-Hyper-V-All" -NoRestart -WarningAction SilentlyContinue | Out-Null
+		Get-WindowsOptionalFeature -Online | Where-Object { $_.FeatureName -eq "Microsoft-Hyper-V-All" } | Disable-WindowsOptionalFeature -Online -NoRestart -WarningAction SilentlyContinue | Out-Null
 	} Else {
 		Uninstall-WindowsFeature -Name "Hyper-V" -IncludeManagementTools -WarningAction SilentlyContinue | Out-Null
+	}
+}
+
+# Uninstall OpenSSH Client - Applicable since 1803
+Function UninstallSSHClient {
+	Write-Output "Uninstalling OpenSSH Client..."
+	Get-WindowsCapability -Online | Where-Object { $_.Name -like "OpenSSH.Client*" } | Remove-WindowsCapability -Online | Out-Null
+}
+
+# Install OpenSSH Client - Applicable since 1803
+Function InstallSSHClient {
+	Write-Output "Installing OpenSSH Client..."
+	Get-WindowsCapability -Online | Where-Object { $_.Name -like "OpenSSH.Client*" } | Add-WindowsCapability -Online | Out-Null
+}
+
+# Install OpenSSH Server - Applicable since 1809
+Function InstallSSHServer {
+	Write-Output "Installing OpenSSH Server..."
+	Get-WindowsCapability -Online | Where-Object { $_.Name -like "OpenSSH.Server*" } | Add-WindowsCapability -Online | Out-Null
+}
+
+# Uninstall OpenSSH Server - Applicable since 1809
+Function UninstallSSHServer {
+	Write-Output "Uninstalling OpenSSH Server..."
+	Get-WindowsCapability -Online | Where-Object { $_.Name -like "OpenSSH.Server*" } | Remove-WindowsCapability -Online | Out-Null
+}
+
+# Install Telnet Client
+Function InstallTelnetClient {
+	Write-Output "Installing Telnet Client..."
+	If ((Get-CimInstance -Class "Win32_OperatingSystem").ProductType -eq 1) {
+		Get-WindowsOptionalFeature -Online | Where-Object { $_.FeatureName -eq "TelnetClient" } | Enable-WindowsOptionalFeature -Online -NoRestart -WarningAction SilentlyContinue | Out-Null
+	} Else {
+		Install-WindowsFeature -Name "Telnet-Client" -WarningAction SilentlyContinue | Out-Null
+	}
+}
+
+# Uninstall Telnet Client
+Function UninstallTelnetClient {
+	Write-Output "Uninstalling Telnet Client..."
+	If ((Get-CimInstance -Class "Win32_OperatingSystem").ProductType -eq 1) {
+		Get-WindowsOptionalFeature -Online | Where-Object { $_.FeatureName -eq "TelnetClient" } | Disable-WindowsOptionalFeature -Online -NoRestart -WarningAction SilentlyContinue | Out-Null
+	} Else {
+		Uninstall-WindowsFeature -Name "Telnet-Client" -WarningAction SilentlyContinue | Out-Null
 	}
 }
 
@@ -2800,7 +3818,7 @@ Function UninstallHyperV {
 Function InstallNET23 {
 	Write-Output "Installing .NET Framework 2.0, 3.0 and 3.5 runtimes..."
 	If ((Get-CimInstance -Class "Win32_OperatingSystem").ProductType -eq 1) {
-		Enable-WindowsOptionalFeature -Online -FeatureName "NetFx3" -NoRestart -WarningAction SilentlyContinue | Out-Null
+		Get-WindowsOptionalFeature -Online | Where-Object { $_.FeatureName -eq "NetFx3" } | Enable-WindowsOptionalFeature -Online -NoRestart -WarningAction SilentlyContinue | Out-Null
 	} Else {
 		Install-WindowsFeature -Name "NET-Framework-Core" -WarningAction SilentlyContinue | Out-Null
 	}
@@ -2810,7 +3828,7 @@ Function InstallNET23 {
 Function UninstallNET23 {
 	Write-Output "Uninstalling .NET Framework 2.0, 3.0 and 3.5 runtimes..."
 	If ((Get-CimInstance -Class "Win32_OperatingSystem").ProductType -eq 1) {
-		Disable-WindowsOptionalFeature -Online -FeatureName "NetFx3" -NoRestart -WarningAction SilentlyContinue | Out-Null
+		Get-WindowsOptionalFeature -Online | Where-Object { $_.FeatureName -eq "NetFx3" } | Disable-WindowsOptionalFeature -Online -NoRestart -WarningAction SilentlyContinue | Out-Null
 	} Else {
 		Uninstall-WindowsFeature -Name "NET-Framework-Core" -WarningAction SilentlyContinue | Out-Null
 	}
@@ -2820,7 +3838,7 @@ Function UninstallNET23 {
 Function SetPhotoViewerAssociation {
 	Write-Output "Setting Photo Viewer association for bmp, gif, jpg, png and tif..."
 	If (!(Test-Path "HKCR:")) {
-		New-PSDrive -Name HKCR -PSProvider Registry -Root HKEY_CLASSES_ROOT | Out-Null
+		New-PSDrive -Name "HKCR" -PSProvider "Registry" -Root "HKEY_CLASSES_ROOT" | Out-Null
 	}
 	ForEach ($type in @("Paint.Picture", "giffile", "jpegfile", "pngfile")) {
 		New-Item -Path $("HKCR:\$type\shell\open") -Force | Out-Null
@@ -2834,7 +3852,7 @@ Function SetPhotoViewerAssociation {
 Function UnsetPhotoViewerAssociation {
 	Write-Output "Unsetting Photo Viewer association for bmp, gif, jpg, png and tif..."
 	If (!(Test-Path "HKCR:")) {
-		New-PSDrive -Name HKCR -PSProvider Registry -Root HKEY_CLASSES_ROOT | Out-Null
+		New-PSDrive -Name "HKCR" -PSProvider "Registry" -Root "HKEY_CLASSES_ROOT" | Out-Null
 	}
 	Remove-Item -Path "HKCR:\Paint.Picture\shell\open" -Recurse -ErrorAction SilentlyContinue
 	Remove-ItemProperty -Path "HKCR:\giffile\shell\open" -Name "MuiVerb" -ErrorAction SilentlyContinue
@@ -2849,7 +3867,7 @@ Function UnsetPhotoViewerAssociation {
 Function AddPhotoViewerOpenWith {
 	Write-Output "Adding Photo Viewer to 'Open with...'"
 	If (!(Test-Path "HKCR:")) {
-		New-PSDrive -Name HKCR -PSProvider Registry -Root HKEY_CLASSES_ROOT | Out-Null
+		New-PSDrive -Name "HKCR" -PSProvider "Registry" -Root "HKEY_CLASSES_ROOT" | Out-Null
 	}
 	New-Item -Path "HKCR:\Applications\photoviewer.dll\shell\open\command" -Force | Out-Null
 	New-Item -Path "HKCR:\Applications\photoviewer.dll\shell\open\DropTarget" -Force | Out-Null
@@ -2862,7 +3880,7 @@ Function AddPhotoViewerOpenWith {
 Function RemovePhotoViewerOpenWith {
 	Write-Output "Removing Photo Viewer from 'Open with...'"
 	If (!(Test-Path "HKCR:")) {
-		New-PSDrive -Name HKCR -PSProvider Registry -Root HKEY_CLASSES_ROOT | Out-Null
+		New-PSDrive -Name "HKCR" -PSProvider "Registry" -Root "HKEY_CLASSES_ROOT" | Out-Null
 	}
 	Remove-Item -Path "HKCR:\Applications\photoviewer.dll\shell\open" -Recurse -ErrorAction SilentlyContinue
 }
@@ -2870,25 +3888,25 @@ Function RemovePhotoViewerOpenWith {
 # Uninstall Microsoft Print to PDF
 Function UninstallPDFPrinter {
 	Write-Output "Uninstalling Microsoft Print to PDF..."
-	Disable-WindowsOptionalFeature -Online -FeatureName "Printing-PrintToPDFServices-Features" -NoRestart -WarningAction SilentlyContinue | Out-Null
+	Get-WindowsOptionalFeature -Online | Where-Object { $_.FeatureName -eq "Printing-PrintToPDFServices-Features" } | Disable-WindowsOptionalFeature -Online -NoRestart -WarningAction SilentlyContinue | Out-Null
 }
 
 # Install Microsoft Print to PDF
 Function InstallPDFPrinter {
 	Write-Output "Installing Microsoft Print to PDF..."
-	Enable-WindowsOptionalFeature -Online -FeatureName "Printing-PrintToPDFServices-Features" -NoRestart -WarningAction SilentlyContinue | Out-Null
+	Get-WindowsOptionalFeature -Online | Where-Object { $_.FeatureName -eq "Printing-PrintToPDFServices-Features" } | Enable-WindowsOptionalFeature -Online -NoRestart -WarningAction SilentlyContinue | Out-Null
 }
 
 # Uninstall Microsoft XPS Document Writer
 Function UninstallXPSPrinter {
 	Write-Output "Uninstalling Microsoft XPS Document Writer..."
-	Disable-WindowsOptionalFeature -Online -FeatureName "Printing-XPSServices-Features" -NoRestart -WarningAction SilentlyContinue | Out-Null
+	Get-WindowsOptionalFeature -Online | Where-Object { $_.FeatureName -eq "Printing-XPSServices-Features" } | Disable-WindowsOptionalFeature -Online -NoRestart -WarningAction SilentlyContinue | Out-Null
 }
 
 # Install Microsoft XPS Document Writer
 Function InstallXPSPrinter {
 	Write-Output "Installing Microsoft XPS Document Writer..."
-	Enable-WindowsOptionalFeature -Online -FeatureName "Printing-XPSServices-Features" -NoRestart -WarningAction SilentlyContinue | Out-Null
+	Get-WindowsOptionalFeature -Online | Where-Object { $_.FeatureName -eq "Printing-XPSServices-Features" } | Enable-WindowsOptionalFeature -Online -NoRestart -WarningAction SilentlyContinue | Out-Null
 }
 
 # Remove Default Fax Printer
@@ -2906,13 +3924,15 @@ Function AddFaxPrinter {
 # Uninstall Windows Fax and Scan Services - Not applicable to Server
 Function UninstallFaxAndScan {
 	Write-Output "Uninstalling Windows Fax and Scan Services..."
-	Disable-WindowsOptionalFeature -Online -FeatureName "FaxServicesClientPackage" -NoRestart -WarningAction SilentlyContinue | Out-Null
+	Get-WindowsOptionalFeature -Online | Where-Object { $_.FeatureName -eq "FaxServicesClientPackage" } | Disable-WindowsOptionalFeature -Online -NoRestart -WarningAction SilentlyContinue | Out-Null
+	Get-WindowsCapability -Online | Where-Object { $_.Name -like "Print.Fax.Scan*" } | Remove-WindowsCapability -Online | Out-Null
 }
 
 # Install Windows Fax and Scan Services - Not applicable to Server
 Function InstallFaxAndScan {
 	Write-Output "Installing Windows Fax and Scan Services..."
-	Enable-WindowsOptionalFeature -Online -FeatureName "FaxServicesClientPackage" -NoRestart -WarningAction SilentlyContinue | Out-Null
+	Get-WindowsOptionalFeature -Online | Where-Object { $_.FeatureName -eq "FaxServicesClientPackage" } | Enable-WindowsOptionalFeature -Online -NoRestart -WarningAction SilentlyContinue | Out-Null
+	Get-WindowsCapability -Online | Where-Object { $_.Name -like "Print.Fax.Scan*" } | Add-WindowsCapability -Online | Out-Null
 }
 
 ##########
@@ -3025,7 +4045,8 @@ Function DisableAudio {
 #region Unpinning
 ##########
 
-# Unpin all Start Menu tiles - Note: This function has no counterpart. You have to pin the tiles back manually.
+# Unpin all Start Menu tiles
+# Note: This function has no counterpart. You have to pin the tiles back manually.
 Function UnpinStartMenuTiles {
 	Write-Output "Unpinning all Start Menu tiles..."
 	If ([System.Environment]::OSVersion.Version.Build -ge 15063 -And [System.Environment]::OSVersion.Version.Build -le 16299) {
@@ -3042,7 +4063,8 @@ Function UnpinStartMenuTiles {
 	}
 }
 
-# Unpin all Taskbar icons - Note: This function has no counterpart. You have to pin the icons back manually.
+# Unpin all Taskbar icons
+# Note: This function has no counterpart. You have to pin the icons back manually.
 Function UnpinTaskbarIcons {
 	Write-Output "Unpinning all Taskbar icons..."
 	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Taskband" -Name "Favorites" -Type Binary -Value ([byte[]](255))
