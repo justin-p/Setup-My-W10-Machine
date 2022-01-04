@@ -22,3 +22,4 @@ Else {
     Write-Output "Cant find $(Join-Path $(Get-ScriptDirectory) 'src\Win10-Initial-Setup-Script\Win10.psm1')"
 }
 Install-BoxstarterPackage -PackageName ChocoPackages, PSPackages
+Set-BackgroundColor -Hex '12121212'
